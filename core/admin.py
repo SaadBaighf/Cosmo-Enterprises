@@ -1,6 +1,6 @@
 # core/admin.py
 from django.contrib import admin
-from .models import Client, Order, Material, Vendor, Reorder, Invoice, ActivityLog
+from .models import Client, Order, Material, Invoice, ActivityLog
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -17,16 +17,6 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
     list_display = ('name', 'quantity', 'threshold', 'unit')
-
-@admin.register(Vendor)
-class VendorAdmin(admin.ModelAdmin):
-    list_display = ('name', 'id')
-
-@admin.register(Reorder)
-class ReorderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'material', 'vendor', 'quantity', 'delivery_date', 'status')
-    list_filter = ('status', 'delivery_date')
-    search_fields = ('material__name', 'vendor__name')
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):

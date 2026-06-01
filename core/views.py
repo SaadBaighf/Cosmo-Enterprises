@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Client, Invoice, Order, Material, Vendor, Reorder , ActivityLog
+from .models import Client, Invoice, Order, Material, ActivityLog
 from .forms import ClientForm, OrderForm
 from  django.http import JsonResponse
 from django.urls import reverse
@@ -121,9 +121,6 @@ def main_dashboard(request):
         elif log.activity_type == 'material_deleted':
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path><line x1="3" y1="20" x2="21" y2="20"></line></svg>'
             color = 'rgba(239, 68, 68, 0.2)'
-        elif log.activity_type == 'reorder_created':
-            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 16v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6"></path><rect x="4" y="14" width="16" height="6" rx="2"></rect><line x1="12" y1="6" x2="12" y2="12"></line></svg>'
-            color = 'rgba(245, 158, 11, 0.2)'
         else:
             # Default icon for other activities
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'
@@ -754,99 +751,6 @@ def get_material_vendors(request, material_id):
     except Material.DoesNotExist:
         return JsonResponse({'error': 'Material not found'}, status=404)
 
-@login_required
-def reorder_dashboard(request):
-    search_query = request.GET.get('search', '').strip()
-    status_filter = request.GET.get('status','').strip()
-    
-    materials = Material.objects.filter(quantity__lte=F('threshold'))
-    total_reorder_materials = materials.count()
-    low_stock_materials_count = materials.filter(
-        quantity__gt=0, 
-    ).count()
-    out_of_stock_materials_count = materials.filter(
-        quantity__lte=0
-    ).count()
-    
-    #  Get materials below threshold AND apply search
-    
-    if search_query:
-        materials = materials.filter(
-            Q(name__icontains=search_query)
-        )
-    
-    #Status Filter
-    if status_filter:
-        if status_filter == 'out_of_stock':
-            materials = materials.filter(quantity__lte=0)
-        elif status_filter == 'low_stock':
-            materials = materials.filter(quantity__gt=0)
-            
-    
-    low_stock_materials = materials.order_by('quantity')
-
-    if request.method == 'POST':
-        material_id = request.POST.get('material_id')
-        order_quantity = request.POST.get('order_quantity')
-        vendor_name = request.POST.get('vendor_name')
-        delivery_date = request.POST.get('delivery_date')
-
-        try:
-            material = Material.objects.get(id=material_id)
-            
-            # Handle new vendor
-            if vendor_name == "new_vendor":
-                new_vendor_name = request.POST.get('new_vendor_name', '').strip()
-                if not new_vendor_name:
-                    messages.error(request, "New vendor name cannot be empty.")
-                    return redirect('reorder_dashboard')
-                vendor_name = new_vendor_name
-
-            # Create or get vendor
-            vendor, created = Vendor.objects.get_or_create(name=vendor_name)
-
-            # Auto-link vendor to material if not already linked
-            if not material.vendors.filter(id=vendor.id).exists():
-                material.vendors.add(vendor)
-                if created:
-                    messages.info(request, f"✅ New vendor '{vendor.name}' added and linked to {material.name}")
-                else:
-                    messages.warning(request, f"⚠️ {vendor.name} was not previously linked to {material.name}. Now linked.")
-
-            # ✅ CAPTURE THE REORDER OBJECT
-            reorder = Reorder.objects.create(
-                material=material,
-                vendor=vendor,
-                quantity=order_quantity,
-                delivery_date=delivery_date,
-                status='pending'
-            )
-
-            # ✅ ADD ACTIVITY LOG FOR REORDER
-            ActivityLog.objects.create(
-                activity_type='reorder_created',
-                description=f'Reorder placed: {order_quantity} {material.unit} of {material.name} from {vendor.name}',
-                user=request.user,
-                reorder_id=reorder.id,  # ✅ Use the captured reorder ID
-                material_id=material.id
-            )
-
-            messages.success(request, f"✅ Reorder placed: {order_quantity} {material.unit} of {material.name} from {vendor.name}")
-            return redirect('reorder_dashboard')
-
-        except Exception as e:
-            messages.error(request, f"❌ Error: {str(e)}")
-            return redirect('reorder_dashboard')
-
-    context = {
-        'low_stock_materials': low_stock_materials,
-        'title': 'Reorder Dashboard',
-        'total_reorder_materials' : total_reorder_materials,
-        'low_stock_materials_count' : low_stock_materials_count,
-        'out_of_stock_materials_count' : out_of_stock_materials_count, 
-        
-    }
-    return render(request, 'reorder_dashboard.html', context)
 
 # views.py
 def view_invoice(request, invoice_id):
