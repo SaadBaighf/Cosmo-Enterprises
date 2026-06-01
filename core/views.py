@@ -205,16 +205,6 @@ def client_dashboard(request):
     start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     this_month_clients = Client.objects.filter(created_at__gte=start_of_month).count()
     
-    # return render(request, 'client.html', {
-    #     'clients': clients,
-    #     'form': form,
-    #     'all_clients_json': all_clients_json,
-    #     'total_clients': total_clients,
-    #     'active_clients': active_clients,
-    #     'inactive_clients': inactive_clients,
-    #     'this_month_clients': this_month_clients,
-    # })
-    
     # Handle DELETE
     if request.method == "POST" and "delete_client" in request.POST:
         client_id = request.POST.get("client_id")
@@ -224,17 +214,17 @@ def client_dashboard(request):
         
         # activity log
         ActivityLog.objects.create(
-            activity_type = 'client_deleted',
-            description = f'Client deleted : {client_name}',
-            user = request.user,
-            client_id = client.id
+            activity_type='client_deleted',
+            description=f'Client deleted : {client_name}',
+            user=request.user,
+            client_id=client.id
         )
         
         messages.success(request, f"Client '{client_name}' deleted successfully.")
         return redirect('client_dashboard')
 
-    # Handle CREATE/UPDATE (POST)
-    if request.method == "POST":
+    # Handle CREATE/UPDATE (POST) - ONLY if not a delete
+    if request.method == "POST" and "delete_client" not in request.POST:
         client_id = request.POST.get("client_id")
         if client_id:
             client = get_object_or_404(Client, id=client_id)
@@ -246,32 +236,27 @@ def client_dashboard(request):
             client = form.save()
             action = "updated" if client_id else "added"
             
-            #activity log
+            # activity log
             if action == "added":
                 ActivityLog.objects.create(
-                    activity_type = 'client_created',
-                    description = f'New client created : {client.name}',
-                        user = request.user,
-                        client_id = client.id
+                    activity_type='client_created',
+                    description=f'New client created : {client.name}',
+                    user=request.user,
+                    client_id=client.id
                 )
-            
             else:
                 ActivityLog.objects.create(
-                    activity_type = 'client_updated',
-                    description =  f'Client Updated : {client.name}',
-                    user = request.user,
-                    client_id = client.id
+                    activity_type='client_updated',
+                    description=f'Client Updated : {client.name}',
+                    user=request.user,
+                    client_id=client.id
                 )
             
             messages.success(request, f"Client {action} successfully.")
             return redirect('client_dashboard')
+        # If form is invalid, it will fall through to render below
     else:
         form = ClientForm()
-
-        # === FILTER & SEARCH LOGIC ===
-    clients = Client.objects.all()
-    search = request.GET.get('search')
-    status = request.GET.get('status')
 
     # === FILTER & SEARCH LOGIC ===
     clients = Client.objects.all()
@@ -280,17 +265,12 @@ def client_dashboard(request):
 
     # === SEARCH LOGIC ===
     if search:
-        # Logic:
-        # 1. Name starts with 'search' (e.g., "a" finds "Ahmed")
-        # 2. Name contains " search" (e.g., " Baig" finds "Saad Baig")
-        # 3. Company starts with 'search' (e.g., "Ham" finds "Hamdard")
         query_filter = (
             Q(name__istartswith=search) | 
             Q(name__icontains=" " + search) | 
             Q(company__istartswith=search)
         )
         
-        # If search is a number (e.g., "31"), also check Client ID
         if search.isdigit():
             query_filter |= Q(id=int(search))
             

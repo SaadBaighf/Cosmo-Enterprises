@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db.models import Max
 import hashlib
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
 
 class ActivityLog(models.Model):
     ACTIVITY_TYPES = [
@@ -42,6 +43,34 @@ class Client(models.Model):
     is_active = models.BooleanField(default=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    name = models.CharField(
+        max_length=100,
+        validators=[
+            RegexValidator(
+                regex=r'^[a-zA-Z\s]{2,}$',
+                message="Name must contain only letters and spaces (min 2 characters)."
+            )
+        ]
+    )
+    
+    email = models.EmailField(
+        null=True, 
+        blank=True,
+        unique=True 
+    )
+    
+    phone = models.CharField(
+        max_length=15, 
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\+?[\d\s\-\(\)]{10,15}$',
+                message="Enter a valid phone number (e.g., +91 98765 43210)."
+            )
+        ]
+    )
+
     
     def get_initials(self):
         if not self.name:
