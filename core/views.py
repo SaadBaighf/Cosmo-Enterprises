@@ -3,6 +3,10 @@ from django.contrib import messages
 from .models import Client, Invoice, Order, Material, ActivityLog, Batch
 from .forms import ClientForm, OrderForm
 from  django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Client, Order, Material, Invoice
 from django.urls import reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -85,46 +89,54 @@ def main_dashboard(request):
         if remaining > 0:
             unpaid_invoices += 1
     
+    # ✅ NEW: Calculate production stats
+    in_production = Order.objects.filter(status__in=['production_starts', 'quality_checking']).count()
+    
+    # ✅ NEW: Calculate total revenue
+    from django.db.models import Sum
+    total_revenue_data = Order.objects.aggregate(total=Sum('payment'))
+    total_revenue = int(total_revenue_data['total'] or 0)
+    
+    # ✅ NEW: Get recent orders for the table
+    recent_orders = Order.objects.select_related('client').order_by('-created_at')[:5]
+    
     # ✅ GET RECENT ACTIVITIES FROM ACTIVITY LOG - WITH COMPLETE ICON MAPPING
     recent_activities = []
     activity_logs = ActivityLog.objects.order_by('-created_at')[:8]
     
     for log in activity_logs:
         # Map activity types to icons and colors
-        if log.activity_type == 'client_created':
+        # Map activity types to icons and colors (OPTIMIZED FOR DARK MODE)
+        if log.activity_type in ['client_created', 'client_updated']:
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>'
-            color = 'rgba(14, 116, 144, 0.2)'
-        elif log.activity_type == 'client_updated':
-            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>'
-            color = 'rgba(14, 116, 144, 0.2)'
+            color = 'rgba(56, 189, 248, 0.25)' # Bright Sky Blue
         elif log.activity_type == 'client_deleted':
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><line x1="3" y1="20" x2="21" y2="20"></line></svg>'
-            color = 'rgba(239, 68, 68, 0.2)'
-        elif log.activity_type == 'order_created':
+            color = 'rgba(248, 113, 113, 0.25)' # Bright Red
+        elif log.activity_type in ['order_created', 'order_updated']:
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>'
-            color = 'rgba(59, 130, 246, 0.2)'
-        elif log.activity_type == 'order_updated':
-            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>'
-            color = 'rgba(59, 130, 246, 0.2)'
+            color = 'rgba(129, 140, 248, 0.25)' # Bright Indigo
         elif log.activity_type == 'order_deleted':
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><line x1="3" y1="20" x2="21" y2="20"></line></svg>'
-            color = 'rgba(239, 68, 68, 0.2)'
+            color = 'rgba(248, 113, 113, 0.25)' # Bright Red
         elif log.activity_type == 'payment_recorded':
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="6" y1="12" x2="6" y2="12"></line><line x1="10" y1="12" x2="14" y2="12"></line><line x1="18" y1="12" x2="18" y2="12"></line></svg>'
-            color = 'rgba(16, 185, 129, 0.2)'
-        elif log.activity_type == 'material_created':
+            color = 'rgba(52, 211, 153, 0.25)' # Bright Emerald
+        elif log.activity_type in ['material_created', 'material_updated']:
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>'
-            color = 'rgba(245, 158, 11, 0.2)'
-        elif log.activity_type == 'material_updated':
-            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path><line x1="12" y1="6" x2="12" y2="12"></line></svg>'
-            color = 'rgba(245, 158, 11, 0.2)'
+            color = 'rgba(251, 191, 36, 0.25)' # Bright Amber
         elif log.activity_type == 'material_deleted':
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path><line x1="3" y1="20" x2="21" y2="20"></line></svg>'
-            color = 'rgba(239, 68, 68, 0.2)'
+            color = 'rgba(248, 113, 113, 0.25)' # Bright Red
+        elif log.activity_type == 'batch_created':
+            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>'
+            color = 'rgba(167, 139, 250, 0.25)' # Bright Violet
+        elif log.activity_type == 'batch_completed':
+            icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+            color = 'rgba(52, 211, 153, 0.25)' # Bright Emerald
         else:
-            # Default icon for other activities
             icon = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'
-            color = 'rgba(107, 114, 128, 0.2)'
+            color = 'rgba(148, 163, 184, 0.25)' # Bright Slate
         
         recent_activities.append({
             'description': log.description,
@@ -143,6 +155,9 @@ def main_dashboard(request):
         'total_invoices': total_invoices,
         'unpaid_invoices': unpaid_invoices,
         'recent_activities': recent_activities,
+        'in_production': in_production,
+        'total_revenue': total_revenue,
+        'recent_orders': recent_orders,
     }
     
     return render(request, 'main.html', context)

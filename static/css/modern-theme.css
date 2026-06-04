@@ -1,0 +1,522 @@
+/* ==========================================
+   DARK THEME - COSMO ENTERPRISES (DARK INDIGO)
+   ========================================== */
+
+:root {
+  /* Dark Backgrounds */
+  --bg-body: #0b1120;      /* Very deep dark blue/slate */
+  --bg-surface: #1e293b;   /* Cards, Navbars, Modals */
+  --bg-surface-hover: #334155; /* Hover states */
+  --bg-input: #0f172a;     /* Input fields */
+
+  /* Darker Indigo Palette */
+  --primary: #4338ca;      /* Indigo 700 */
+  --primary-light: #4f46e5;/* Indigo 600 */
+  --primary-dark: #312e81; /* Indigo 800 */
+  --accent: #7c3aed;       /* Violet 600 */
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6d28d9 100%);
+  --gradient-hero: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  
+  /* Text Colors */
+  --text-primary: #f8fafc; /* Crisp white/slate */
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;   /* Light gray for muted text */
+  
+  /* Borders */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-light: rgba(255, 255, 255, 0.15);
+  
+  /* Shadows (Deep and subtle for dark mode) */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px rgba(67, 56, 202, 0.4); /* Indigo glow effect */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ==========================================
+   BOOTSTRAP OVERRIDES (CRITICAL FOR DARK MODE)
+   ========================================== */
+.card, .table, .modal-content, .list-group-item {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+.table {
+  --bs-table-bg: transparent !important;
+  --bs-table-color: var(--text-primary) !important;
+  --bs-table-border-color: var(--border-color) !important;
+}
+.table-hover tbody tr:hover {
+  background-color: var(--bg-surface-hover) !important;
+  color: var(--text-primary) !important;
+}
+.text-dark { color: var(--text-primary) !important; }
+.bg-white, .bg-light { background-color: var(--bg-surface) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-primary { color: var(--primary-light) !important; }
+
+/* ==========================================
+   NAVBAR - DARK GLASSMORPHISM
+   ========================================== */
+.modern-navbar {
+  background: rgba(15, 23, 42, 0.85); 
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.nav-link {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  margin: 0 0.25rem;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--text-primary) !important;
+  background: rgba(67, 56, 202, 0.2); 
+}
+
+/* ==========================================
+   HERO SECTION - DARK INDIGO GRADIENT
+   ========================================== */
+.hero-section {
+  background: var(--gradient-hero);
+  padding: 4rem 0;
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+}
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.3), transparent 50%);
+  opacity: 0.5;
+}
+.hero-section h1, .hero-section h2 {
+  font-weight: 800;
+  position: relative;
+  color: #ffffff;
+}
+.hero-section p {
+  font-size: 1.125rem;
+  opacity: 0.9;
+  position: relative;
+  margin: 0;
+  color: #e2e8f0;
+}
+
+/* ==========================================
+   STATS CARDS
+   ========================================== */
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--primary-light);
+}
+.stat-card h3 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-card small {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.875rem;
+}
+
+
+/* ==========================================
+   CONTENT CARDS & MODULES
+   ========================================== */
+.content-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.content-card:hover {
+  border-color: var(--border-color-light);
+  box-shadow: var(--shadow-lg);
+}
+.card-header-modern {
+  background: rgba(15, 23, 42, 0.5);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.card-header-modern h5 {
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+}
+
+/* Module Cards Specific */
+.module-card {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+.module-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--primary);
+}
+.module-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ==========================================
+   TABLE STYLES
+   ========================================== */
+.modern-table {
+  background: var(--bg-surface);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 0;
+  color: var(--text-primary);
+}
+.modern-table thead {
+  background: rgba(15, 23, 42, 0.6);
+}
+.modern-table th {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+}
+.modern-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+.modern-table tbody tr {
+  transition: background 0.2s ease;
+}
+.modern-table tbody tr:hover {
+  background: var(--bg-surface-hover);
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+.btn-modern-primary {
+  background: var(--gradient-primary);
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.4);
+  transition: all 0.3s ease;
+}
+.btn-modern-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 56, 202, 0.6);
+  color: #ffffff;
+}
+.btn-modern-outline {
+  background: transparent;
+  border: 2px solid var(--primary-light);
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+.btn-modern-outline:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.btn-primary {
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  font-weight: 600;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.4);
+  transition: all 0.3s ease;
+  color: #ffffff !important;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 56, 202, 0.6);
+}
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.5);
+  color: #ffffff;
+}
+.btn-outline-light:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+/* ==========================================
+   FORMS & MODALS
+   ========================================== */
+.form-control, .form-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color-light);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+.form-control:focus, .form-select:focus {
+  background: var(--bg-input);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(67, 56, 202, 0.25);
+  color: var(--text-primary);
+}
+.form-control::placeholder { color: var(--text-muted); }
+.form-label { color: var(--text-secondary); font-weight: 500; }
+
+.modal-header {
+  background: rgba(15, 23, 42, 0.5);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 1rem 1rem 0 0;
+  padding: 1.25rem 1.5rem;
+}
+.modal-header h5 { font-weight: 700; color: var(--text-primary); }
+.modal-footer { border-top: 1px solid var(--border-color); padding: 1.25rem 1.5rem; }
+.btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+
+/* ==========================================
+   UTILITIES & ACTIVITY ITEMS
+   ========================================== */
+.bg-gradient-light { background: var(--bg-surface) !important; }
+.border-top { border-color: var(--border-color) !important; }
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s;
+}
+.activity-item:hover { background: var(--bg-surface-hover); }
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 40px; height: 40px;
+  border-radius: 0.5rem;
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 1rem; flex-shrink: 0;
+}
+.activity-content { flex: 1; }
+.activity-description { font-weight: 500; color: var(--text-primary); margin-bottom: 0.25rem; }
+.activity-timestamp { font-size: 0.875rem; color: var(--text-muted); }
+
+/* ==========================================
+   ANIMATIONS & RESPONSIVE
+   ========================================== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.6s ease-out; }
+
+@media (max-width: 768px) {
+  .hero-section h1 { font-size: 2rem; }
+  .stat-card h3 { font-size: 2rem; }
+  .navbar-nav { margin-top: 1rem; }
+  .nav-link { padding: 0.5rem !important; font-size: 0.875rem; }
+}
+/* Fix mobile menu icon for dark theme */
+.navbar-toggler {
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  padding: 0.5rem 0.75rem;
+}
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.5);
+}
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+}
+/* ==========================================
+   LUMEN OS STYLE NAVBAR
+   ========================================== */
+
+.lumen-navbar {
+  background: rgba(11, 17, 32, 0.7); /* Dark transparent */
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Very subtle border */
+  padding: 1rem 0;
+}
+
+/* Split Logo Style */
+.lumen-brand {
+  font-size: 1.25rem;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.lumen-brand-sub {
+  color: #64748b; /* Muted gray for the "/ os" part */
+  font-weight: 400;
+  font-size: 1.1rem;
+}
+
+/* Centered Navigation Links */
+.lumen-nav {
+  gap: 0.5rem;
+}
+.lumen-nav .nav-link {
+  color: #94a3b8 !important; /* Muted gray */
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px;
+  transition: color 0.2s ease;
+}
+.lumen-nav .nav-link:hover,
+.lumen-nav .nav-link.active {
+  color: #ffffff !important; /* White on hover */
+  background: transparent; /* No background pill, just text change */
+}
+
+/* The "Request Access" Style Button (Inverted for Dark Mode) */
+.lumen-btn {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 9999px; /* Full pill shape */
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.lumen-btn:hover {
+  background: #e2e8f0;
+  color: #000000;
+  transform: translateY(-1px);
+}
+
+/* Simple Text Link (Like "Sign in") */
+.lumen-text-link {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.lumen-text-link:hover {
+  color: #ffffff;
+}
+/* Force rounded badges */
+.badge-modern {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.9rem !important;
+  border-radius: 50rem !important;
+  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1;
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden; /* Ensures background respects border-radius */
+}
+
+/* Specific status badge styles for dark mode */
+.badge-sample-preparing {
+  background: rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.badge-production-starts {
+  background: rgba(96, 165, 250, 0.15) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+}
+
+.badge-quality-checking {
+  background: rgba(167, 139, 250, 0.15) !important;
+  color: #a78bfa !important;
+  border: 1px solid rgba(167, 139, 250, 0.3) !important;
+}
+
+.badge-ready-for-shipment {
+  background: rgba(34, 211, 238, 0.15) !important;
+  color: #22d3ee !important;
+  border: 1px solid rgba(34, 211, 238, 0.3) !important;
+}
+
+.badge-shipped {
+  background: rgba(147, 197, 253, 0.15) !important;
+  color: #93c5fd !important;
+  border: 1px solid rgba(147, 197, 253, 0.3) !important;
+}
+
+.badge-completed {
+  background: rgba(74, 222, 128, 0.15) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3) !important;
+}
