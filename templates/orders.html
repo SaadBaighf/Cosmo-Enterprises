@@ -7,811 +7,152 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Orders | Cosmo Enterprises</title>
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Use the specific Client Dashboard CSS to ensure style consistency -->
-  <link href="{% static 'css/order-dashboard.css' %}" rel="stylesheet">
+  
+  <!-- Modern Dark Theme CSS -->
+  <link href="{% static 'css/modern-theme.css' %}" rel="stylesheet">
 
-  <!-- SVG Favicon (for modern browsers) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <path d='M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z' fill='%230891b2'/>
-  <rect x='45' y='10' width='10' height='20' fill='%230891b2'/>
-  <circle cx='35' cy='60' r='4' fill='%23ffffff'/>
-  <circle cx='65' cy='50' r='3' fill='%23ffffff'/>
-  <circle cx='50' cy='70' r='3.5' fill='%23ffffff'/>
-  <line x1='35' y1='60' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-  <line x1='65' y1='50' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-</svg>" type="image/svg+xml" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-    :root {
-      --primary: #0891b2;
-      --primary-dark: #0e7490;
-      --secondary: #059669;
-      --danger: #e11d48;
-      --warning: #d97706;
-      --success: #10b981;
-      --success-light: #d1fae5;
-      --error: #ef4444;
-      --error-light: #fee2e2;
-    }
-
-    /* ==========================================
-   ORDER STATUS BADGES (High Priority)
-   ========================================== */
-
-    /* 
-   Force the Pill Look for Order Statuses. 
-   Using !important to override any inherited styles from Client Dashboard sections.
-*/
-    .stat-badge {
-      display: inline-block !important;
-      padding: 0.25rem 0.75rem !important;
-      border-radius: 9999px !important;
-      /* Pill shape */
-      font-size: 0.85rem !important;
-      font-weight: 600 !important;
-      border: 1px solid rgba(0, 0, 0, 0.1) !important;
-      line-height: 1.5 !important;
-    }
-
-    /* Colors for Order Statuses */
-    .stat-badge.status-completed {
-      background-color: var(--success-light) !important;
-      color: rgb(17, 104, 17) !important;
-      border-color: rgba(198, 216, 210, 0.2) !important;
-    }
-
-    .stat-badge.status-pending {
-      background-color: #fef3c7 !important;
-      color: #b45309 !important;
-      border-color: rgba(183, 119, 7, 0.2) !important;
-    }
-
-    .stat-badge.status-production {
-      background-color: #dbeafe !important;
-      color: #1e40af !important;
-      border-color: rgba(59, 130, 246, 0.2) !important;
-    }
-
-    .stat-badge.status-quality {
-      background-color: #e0e7ff !important;
-      color: #4338ca !important;
-      border-color: rgba(99, 102, 241, 0.2) !important;
-    }
-
-    .stat-badge.status-shipment {
-      background-color: #cffafe !important;
-      color: #0e7490 !important;
-      border-color: rgba(6, 182, 212, 0.2) !important;
-    }
-
-    .stat-badge.status-shipped {
-      background-color: #ecfeff !important;
-      color: rgb(8, 69, 181) !important;
-      border-color: rgba(62, 94, 103, 0.2) !important;
-    }
-
-    /* ==========================================
-   FORCE OVERRIDE - All Styles
-   ========================================== */
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-      background: linear-gradient(135deg, #ecfeff 0%, #ffffff 50%, #ecfdf5 100%) !important;
-      color: #0f172a !important;
-      line-height: 1.6;
-      min-height: 100vh;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    /* ==========================================
-   NAVBAR
-   ========================================== */
-
-    .navbar {
-      background: rgba(255, 255, 255, 0.8) !important;
-      backdrop-filter: blur(12px) !important;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-      padding: 0.5rem 0 !important;
-    }
-
-    .navbar-brand {
-      font-weight: 700 !important;
-      color: var(--primary) !important;
-      font-size: 1.5rem;
-      display: flex !important;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .navbar-brand svg {
-      width: 36px !important;
-      height: 36px !important;
-    }
-
-    .navbar-brand .fw-bold {
-      font-size: 1.5rem !important;
-      color: var(--primary) !important;
-    }
-
-    .navbar-nav .nav-link {
-      color: #64748b !important;
-      font-weight: 500;
-      padding: 0.5rem 1rem !important;
-      border-radius: 0.5rem;
-      transition: all 0.2s ease;
-      position: relative;
-      margin-bottom: 0 !important;
-      text-decoration: none !important;
-    }
-
-    .navbar-nav .nav-link::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      transition: all 0.3s ease;
-      transform: translateX(-50%);
-    }
-
-    .navbar-nav .nav-link:hover::after,
-    .navbar-nav .nav-link.active::after {
-      width: 80%;
-    }
-
-    .navbar-nav .nav-link.active,
-    .navbar-nav .nav-link:hover {
-      color: var(--primary) !important;
-      background: rgba(8, 145, 182, 0.05) !important;
-      font-weight: 600;
-    }
-
-    /* ==========================================
-   HEADER SECTION
-   ========================================== */
-
-    .header-section {
-      background: linear-gradient(135deg, #ecfeff 0%, #ffffff 50%, #ecfdf5 100%) !important;
-      padding: 2.5rem 0 !important;
-      border-bottom: none !important;
-    }
-
-    .header-section h2 {
-      font-size: 2.5rem !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      margin-bottom: 0.5rem;
-      line-height: 1.2;
-    }
-
-    .header-section p {
-      color: #64748b !important;
-      font-size: 1.125rem;
-      margin: 0;
-    }
-
-    /* ==========================================
-   STATS CARDS
-   ========================================== */
-
-    .container.mt-4 .card:not(.clients-table-card) {
-      border: none !important;
-      border-radius: 12px !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      overflow: hidden;
-      background: white !important;
-      display: flex !important;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 1.5rem !important;
-      height: 100%;
-    }
-
-    .container.mt-4 .card:not(.clients-table-card):hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .container.mt-4 .card h3 {
-      font-size: 2.25rem !important;
-      font-weight: 800 !important;
-      color: #0f172a !important;
-      margin-bottom: 0.25rem;
-      margin-top: 0;
-    }
-
-    .container.mt-4 .card small {
-      color: #64748b !important;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.75rem;
-    }
-
-    /* Top Border Gradient for Stats */
-    .container.mt-4 .card:not(.clients-table-card)::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      border-radius: 12px 12px 0 0;
-    }
-
-    /* Gradient for Stats Cards (Specific to Order Dashboard colors) */
-    .container.mt-4 .col-md-3:nth-child(1) .card::before {
-      background: linear-gradient(90deg, #06b6d4, #0891b2);
-    }
-
-    /* Cyan */
-    .container.mt-4 .col-md-3:nth-child(2) .card::before {
-      background: linear-gradient(90deg, #f59e0b, #d97706);
-    }
-
-    /* Amber */
-    .container.mt-4 .col-md-3:nth-child(3) .card::before {
-      background: linear-gradient(90deg, #3b82f6, #2563eb);
-    }
-
-    /* Blue */
-    .container.mt-4 .col-md-3:nth-child(4) .card::before {
-      background: linear-gradient(90deg, #10b981, #059669);
-    }
-
-    /* Green */
-
-    /* ==========================================
-   FILTERS & SEARCH
-   ========================================== */
-
-    .container.mt-4 form[method="get"],
-    form[method="get"].d-flex {
-      border: none !important;
-      border-radius: 12px !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
-      background: white !important;
-      padding: 1rem !important;
-    }
-
-    /* Match Finance Dashboard Search Box */
-.form-control {
-  border-radius: 8px !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 0.75rem 1rem !important;
-  font-size: 0.95rem;
-}
-
-.form-control:focus {
-  border-color: #0891b2 !important;
-  box-shadow: 0 0 0 0 0.1rem rgba(8, 145, 182, 0.2) !important;
-}
-
-.form-select {
-  border-radius: 8px !important;
-  border: 1px solid #e2e8f0 !important;
-  padding: 0.75rem 1rem !important;
-  font-size: 0.95rem;
-}
-
-.form-select:focus {
-  border-color: #0891b2 !important;
-  box-shadow: 0 0 0 0 0.1rem rgba(8, 145, 182, 0.2) !important;
-}
-
-    /* ==========================================
-   ORDER TABLE
-   ========================================== */
-
-    .container.mb-5 .card {
-      border: none !important;
-      border-radius: 12px !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
-      overflow: hidden;
-      background: white !important;
-      margin-bottom: 0;
-    }
-
-    .table {
-      margin: 0 !important;
-    }
-
-    .container.mb-5 .table thead {
-      background: linear-gradient(135deg, #f1f5f9 0%, #f8fafc 100%) !important;
-    }
-
-    .container.mb-5 .table th {
-      background: linear-gradient(135deg, #f1f5f9 0%, #f8fafc 100%) !important;
-      font-weight: 600 !important;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-size: 0.75rem;
-      color: #64748b !important;
-      padding: 1rem 1.5rem !important;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
-      font-family: inherit;
-    }
-
-    .container.mb-5 .table td {
-      padding: 1rem 1.5rem !important;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
-      vertical-align: middle;
-      color: #0f172a;
-      font-family: inherit;
-    }
-
-    .container.mb-5 .table tbody tr {
-      transition: background-color 0.2s ease;
-    }
-
-    .container.mb-5 .table tbody tr:hover {
-      background: rgba(236, 254, 255, 0.3) !important;
-    }
-
-    /* ==========================================
-   BUTTONS
-   ========================================== */
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
-      border: none !important;
-      font-weight: 600 !important;
-      padding: 0.625rem 1.25rem !important;
-      border-radius: 0.5rem !important;
-      box-shadow: 0 4px 12px rgba(8, 145, 182, 0.2) !important;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(135deg, var(--primary-dark), var(--secondary)) !important;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(8, 145, 182, 0.3) !important;
-    }
-
-    .btn-outline-primary {
-      border-color: rgba(8, 145, 182, 0.3) !important;
-      color: var(--primary) !important;
-      font-weight: 500 !important;
-      border-radius: 0.375rem !important;
-    }
-
-    .btn-outline-primary:hover {
-      background: rgba(8, 145, 182, 0.1) !important;
-      border-color: var(--primary) !important;
-    }
-
-    .btn-outline-danger {
-      border-color: rgba(239, 68, 68, 0.3) !important;
-      color: var(--error) !important;
-      font-weight: 500 !important;
-      border-radius: 0.375rem !important;
-    }
-
-    .btn-outline-danger:hover {
-      background: rgba(239, 68, 68, 0.1) !important;
-      border-color: var(--error) !important;
-    }
-
-    .btn-outline-secondary {
-      border-color: #cbd5e1 !important;
-      color: #64748b !important;
-      border-radius: 0.375rem !important;
-    }
-
-    .btn-outline-secondary:hover {
-      background: #f1f5f9 !important;
-      border-color: #94a3b8 !important;
-    }
-
-    .btn-sm {
-      padding: 0.375rem 0.75rem !important;
-      font-size: 0.875rem !important;
-      margin-top: 10px;
-    }
-
-    /* ==========================================
-   MODAL
-   ========================================== */
-
-    .modal-content {
-      border: none !important;
-      border-radius: 12px !important;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-    }
-
-    .modal-header {
-      background: linear-gradient(135deg, #f1f5f9 0%, #f8fafc 100%) !important;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
-      border-radius: 12px 12px 0 0 !important;
-      padding: 1.25rem 1.5rem !important;
-    }
-
-    .modal-header h5 {
-      font-weight: 700 !important;
-      color: #0f172a !important;
-      font-size: 1.25rem;
-    }
-
-    .modal-body {
-      padding: 1.5rem !important;
-    }
-
-    .form-label {
-      font-weight: 600 !important;
-      color: #0f172a !important;
-      margin-bottom: 0.5rem !important;
-      font-size: 0.875rem;
-      display: block;
-    }
-
-    .modal-footer {
-      border-top: 1px solid rgba(226, 232, 240, 0.5) !important;
-      padding: 1.25rem 1.5rem !important;
-      border-radius: 0 0 12px 12px !important;
-    }
-
-    .btn-secondary {
-      background: #f1f5f9 !important;
-      border-color: #e2e8f0 !important;
-      color: #64748b !important;
-      font-weight: 500;
-    }
-
-    .btn-secondary:hover {
-      background: #e2e8f0 !important;
-      border-color: #cbd5e1 !important;
-    }
-
-    .btn-danger {
-      background: var(--error) !important;
-      border-color: var(--error) !important;
-      color: white !important;
-      font-weight: 600;
-    }
-
-    .btn-danger:hover {
-      background: #dc2626 !important;
-      border-color: #b91c1c !important;
-    }
-
-    /* ==========================================
-   ALERT MESSAGES
-   ========================================== */
-
-    .alert {
-      border: none !important;
-      border-radius: 12px !important;
-      font-weight: 500;
-      padding: 1rem 1.5rem !important;
-    }
-
-    .alert-success {
-      background: var(--success-light) !important;
-      color: var(--success) !important;
-      border: 1px solid rgba(16, 185, 129, 0.2) !important;
-    }
-
-    .alert-danger {
-      background: var(--error-light) !important;
-      color: var(--error) !important;
-      border: 1px solid rgba(239, 68, 68, 0.2) !important;
-    }
-
-    .alert-warning {
-      background: #fef3c7 !important;
-      color: #92400e !important;
-      border: 1px solid rgba(245, 158, 11, 0.2) !important;
-    }
-
-    .alert-info {
-      background: #dbeafe !important;
-      color: #1e40af !important;
-      border: 1px solid rgba(59, 130, 246, 0.2) !important;
-    }
-
-    /* ==========================================
-   TEXT COLORS
-   ========================================== */
-
-    .text-muted {
-      color: #64748b !important;
-    }
-
-    small.text-muted {
-      color: #94a3b8 !important;
-    }
-
-    strong {
-      color: #0f172a !important;
-    }
-
-    /* ==========================================
-   MOBILE RESPONSIVE
-   ========================================== */
-
-    @media (max-width: 768px) {
-      .header-section h2 {
-        font-size: 1.75rem !important;
-      }
-
-      .header-section p {
-        font-size: 1rem;
-      }
-
-      .container.mt-4 .card h3 {
-        font-size: 1.75rem !important;
-      }
-
-      .table th,
-      .table td {
-        padding: 0.75rem 1rem !important;
-        font-size: 0.875rem;
-      }
-
-      .btn-primary,
-      .btn-secondary,
-      .btn-outline-primary,
-      .btn-outline-danger,
-      .btn-outline-secondary {
-        padding: 0.5rem 1rem !important;
-        font-size: 0.875rem;
-      }
-
-      .navbar-brand {
-        font-size: 1.25rem !important;
-      }
-
-      .navbar-brand svg {
-        width: 28px !important;
-        height: 28px !important;
-      }
-
-      .navbar-brand .fw-bold {
-        font-size: 1.25rem !important;
-      }
-    }
-
-    /* ==========================================
-   UTILITY CLASSES (Django/Bootstrap Override)
-   ========================================== */
-
-    .d-flex {
-      display: flex !important;
-    }
-
-    .align-items-center {
-      align-items: center !important;
-    }
-
-    .justify-content-between {
-      justify-content: space-between !important;
-    }
-
-    .gap-2 {
-      gap: 0.5rem !important;
-    }
-
-    .mb-0 {
-      margin-bottom: 0 !important;
-    }
-
-    .mb-3 {
-      margin-bottom: 1rem !important;
-    }
-
-    .mt-3 {
-      margin-top: 1rem !important;
-    }
-
-    .mt-4 {
-      margin-top: 1.5rem !important;
-    }
-
-    .mb-5 {
-      margin-bottom: 3rem !important;
-    }
-
-    .me-1 {
-      margin-right: 0.25rem !important;
-    }
-
-    .me-3 {
-      margin-right: 1rem !important;
-    }
-
-    .py-4 {
-      padding-top: 1.5rem !important;
-      padding-bottom: 1.5rem !important;
-    }
-
-    .shadow-sm {
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-    }
-
-    .text-center {
-      text-align: center !important;
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      margin: 0 -0.75rem;
-    }
-
-    .col-md-3 {
-      flex: 0 0 auto;
-      width: 100%;
-      padding: 0.75rem;
-    }
-
-    @media (min-width: 768px) {
-      .col-md-3 {
-        width: 25%;
-      }
+      background: linear-gradient(135deg, #1e1b4b 0%, #3D32A6 50%, #312e81 100%) !important;
+    }
+    
+    /* Order Status Badges - Dark Mode Optimized */
+    .badge-sample-preparing {
+      background: rgba(251, 191, 36, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    .badge-production-starts {
+      background: rgba(96, 165, 250, 0.15) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(96, 165, 250, 0.3) !important;
+    }
+    .badge-quality-checking {
+      background: rgba(167, 139, 250, 0.15) !important;
+      color: #a78bfa !important;
+      border: 1px solid rgba(167, 139, 250, 0.3) !important;
+    }
+    .badge-ready-for-shipment {
+      background: rgba(34, 211, 238, 0.15) !important;
+      color: #22d3ee !important;
+      border: 1px solid rgba(34, 211, 238, 0.3) !important;
+    }
+    .badge-shipped {
+      background: rgba(147, 197, 253, 0.15) !important;
+      color: #93c5fd !important;
+      border: 1px solid rgba(147, 197, 253, 0.3) !important;
+    }
+    .badge-completed {
+      background: rgba(74, 222, 128, 0.15) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(74, 222, 128, 0.3) !important;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white">
+  <!-- Lumen Style Navbar -->
+  <nav class="navbar navbar-expand-lg lumen-navbar sticky-top">
     <div class="container">
-      <!-- Professional SVG Logo -->
       <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
-        <svg width="36" height="36" viewBox="0 0 100 100">
-          <path d="M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z" fill="#0891b2" />
-          <rect x="45" y="10" width="10" height="20" fill="#0891b2" />
-          <circle cx="35" cy="60" r="4" fill="#ffffff" />
-          <circle cx="65" cy="50" r="3" fill="#ffffff" />
-          <circle cx="50" cy="70" r="3.5" fill="#ffffff" />
-          <line x1="35" y1="60" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-          <line x1="65" y1="50" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-        </svg>
-        <span class="fw-bold">Cosmo Enterprises</span>
+        <span class="lumen-brand">Cosmo <span class="lumen-brand-sub">/ Enterprises</span></span>
       </a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#lumenNav">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/client/">Clients</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/order/">Orders</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/inventory/">Inventory</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/batch/">Batches</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/finance/">Finance</a>
-          </li>
-          <a class="nav-link" href="{% url 'logout' %}" title="Logout">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</a>
+      <div class="collapse navbar-collapse justify-content-center" id="lumenNav">
+        <ul class="navbar-nav lumen-nav">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/client/">Clients</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/order/">Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/batch/">Batches</a></li>
+          <li class="nav-item"><a class="nav-link" href="/inventory/">Inventory</a></li>
+          <li class="nav-item"><a class="nav-link" href="/finance/">Finance</a></li>
         </ul>
+      </div>
+      <div class="d-none d-lg-flex align-items-center gap-4 ms-auto">
+        <a href="{% url 'logout' %}" class="lumen-text-link">Logout</a>
+        <a href="/order/" class="lumen-btn">
+          New Order
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+        </a>
       </div>
     </div>
   </nav>
 
-  <!-- Header -->
-  <section class="header-section">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h2> Order Dashboard</h2>
-          <p class="text-muted mb-0">Track and manage chemical orders</p>
-        </div>
+  <!-- Sub-page Header -->
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h2 class="fw-bold mb-1 text-white">Order Management</h2>
+        <!-- <p class="text-muted mb-0">Track and manage fabric dyeing orders from sample to shipment</p> -->
       </div>
     </div>
+  </div>
 
-    <!-- Success/Error Messages -->
-    {% if messages %}
-    <div class="container mt-3">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-      {% endfor %}
+  <!-- Messages -->
+  {% if messages %}
+  <div class="container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    {% endif %}
-  </section>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- Stats Summary -->
-  <div class="container mt-4">
+  <div class="container mb-4">
     <div class="row g-3">
       <div class="col-md-3">
-        <!-- Updated to match Client Dashboard CSS Structure -->
-        <div class="card">
-          <h3>{{ total_orders }}</h3>
-          <small>Total Orders</small>
-        </div>
+        <div class="stat-card"><h3>{{ total_orders }}</h3><small>Total Orders</small></div>
       </div>
       <div class="col-md-3">
-        <!-- Updated to match Client Dashboard CSS Structure -->
-        <div class="card">
-          <h3>{{ pending }}</h3>
-          <small>Pending</small>
-        </div>
+        <div class="stat-card"><h3>{{ pending }}</h3><small>Pending</small></div>
       </div>
       <div class="col-md-3">
-        <!-- Updated to match Client Dashboard CSS Structure -->
-        <div class="card">
-          <h3>{{ shipped }}</h3>
-          <small>Shipped</small>
-        </div>
+        <div class="stat-card"><h3>{{ shipped }}</h3><small>Shipped</small></div>
       </div>
       <div class="col-md-3">
-        <!-- Updated to match Client Dashboard CSS Structure -->
-        <div class="card">
-          <h3>{{ completed }}</h3>
-          <small>Completed</small>
-        </div>
+        <div class="stat-card"><h3>{{ completed }}</h3><small>Completed</small></div>
       </div>
     </div>
   </div>
 
   <!-- Filters & Search -->
-  <div class="container mt-4">
-    <form method="get" class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-      <div class="me-2">
-        <input type="text" name="search" class="form-control" placeholder="Search orders..."
-          value="{{ request.GET.search }}">
-      </div>
-
-      <div class="me-2">
-        <select name="status" onchange="this.form.submit()" class="form-select">
-          <option value="" {% if not request.GET.status %}selected{% endif %}>All Status</option>
-          <option value="sample_preparing" {% if request.GET.status == "sample_preparing" %}selected{% endif %}>Sample Preparing</option>
-          <option value="production_starts" {% if request.GET.status == "production_starts" %}selected{% endif %}>Production Starts</option>
-          <option value="quality_checking" {% if request.GET.status == "quality_checking" %}selected{% endif %}>Quality Checking</option>
-          <option value="ready_for_shipment" {% if request.GET.status == "ready_for_shipment" %}selected{% endif %}>Ready for Shipment</option>
-         <option value="shipped" {% if request.GET.status == "shipped" %}selected{% endif %}>Shipped</option>
-          option value="completed" {% if request.GET.status == "completed" %}selected{% endif %}>Completed</option>
-        </select>
-      </div>
-
-      <a href="{% url 'order_dashboard' %}" class="btn btn-outline-secondary">Clear</a>
+  <div class="container mb-4">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center p-3 rounded-3" style="background: var(--bg-surface); border: 1px solid var(--border-color);">
+      <input type="text" name="search" class="form-control flex-grow-1" placeholder="Search orders..." value="{{ request.GET.search }}">
+      <select name="status" onchange="this.form.submit()" class="form-select" style="max-width: 220px;">
+        <option value="" {% if not request.GET.status %}selected{% endif %}>All Status</option>
+        <option value="sample_preparing" {% if request.GET.status == "sample_preparing" %}selected{% endif %}>Sample Preparing</option>
+        <option value="production_starts" {% if request.GET.status == "production_starts" %}selected{% endif %}>Production Starts</option>
+        <option value="quality_checking" {% if request.GET.status == "quality_checking" %}selected{% endif %}>Quality Checking</option>
+        <option value="ready_for_shipment" {% if request.GET.status == "ready_for_shipment" %}selected{% endif %}>Ready for Shipment</option>
+        <option value="shipped" {% if request.GET.status == "shipped" %}selected{% endif %}>Shipped</option>
+        <option value="completed" {% if request.GET.status == "completed" %}selected{% endif %}>Completed</option>
+      </select>
+      <a href="{% url 'order_dashboard' %}" class="btn btn-modern-outline btn-sm">Clear</a>
     </form>
   </div>
 
   <!-- Orders Table -->
   <div class="container mb-5">
-    <div class="card">
+    <div class="content-card">
       <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table modern-table mb-0">
           <thead>
             <tr>
               <th>Order ID</th>
-              <th>Client ID</th>
-              <th>Order Type</th>
+              <th>Client</th>
+              <th>Fabric Type</th>
               <th>Quantity</th>
               <th>Due Date</th>
               <th>Amount</th>
@@ -822,33 +163,40 @@
           <tbody>
             {% for order in orders %}
             <tr>
-              <td>{{ order.order_id }}</td>
-              <td>CL-{{ order.client.id }}</td>
-              <td>{{ order.fabric_type }}</td>
-              <td>{{ order.quantity }} Kg</td>
-              <td>{{ order.due_date }}</td>
-              <td>${{ order.payment }}</td>
+              <td><strong class="text-white">{{ order.order_id }}</strong></td>
+              <td class="text-secondary">
+                <div>
+                  <strong class="text-white">{{ order.client.name }}</strong><br>
+                  <small class="text-muted">CL-{{ order.client.id }}</small>
+                </div>
+              </td>
+              <td class="text-secondary">{{ order.fabric_type }}</td>
+              <td class="text-secondary">{{ order.quantity }} Kg</td>
+              <td class="text-secondary">{{ order.due_date }}</td>
+              <td class="text-white fw-semibold">${{ order.payment }}</td>
               <td style="text-align: center;">
                 {% if order.status == 'sample_preparing' %}
-                <span class="stat-badge status-pending">Sample Preparing</span>
+                  <span class="badge-modern badge-sample-preparing">Sample Preparing</span>
                 {% elif order.status == 'production_starts' %}
-                <span class="stat-badge status-production">Production Starts</span>
+                  <span class="badge-modern badge-production-starts">Production Starts</span>
                 {% elif order.status == 'quality_checking' %}
-                <span class="stat-badge status-quality">Quality Checking</span>
+                  <span class="badge-modern badge-quality-checking">Quality Checking</span>
                 {% elif order.status == 'ready_for_shipment' %}
-                <span class="stat-badge status-shipment" style="text-align: center;">Ready for Shipment</span>
+                  <span class="badge-modern badge-ready-for-shipment">Ready for Shipment</span>
                 {% elif order.status == 'shipped' %}
-                <span class="stat-badge status-shipped">Shipped</span>
+                  <span class="badge-modern badge-shipped">Shipped</span>
                 {% elif order.status == 'completed' %}
-                <span class="stat-badge status-completed">Completed</span>
+                  <span class="badge-modern badge-completed">Completed</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ order.status }}</span>
                 {% endif %}
               </td>
               <td>
-                <!-- Edit Button (Removed data-status) -->
-                <button type="button" class="btn btn-sm btn-outline-primary me-1 edit-order-btn"
+                <!-- Edit Button -->
+                <button type="button" class="btn btn-sm btn-modern-outline me-1 edit-order-btn"
                   data-internal-id="{{ order.id }}" data-order-id="{{ order.order_id }}"
                   data-fabric="{{ order.fabric_type }}" data-qty="{{ order.quantity }}"
-                  data-payment="{{ order.payment }}"
+                  data-payment="{{ order.payment }}" data-status="{{ order.status }}"
                   data-due_date="{{ order.due_date|date:'Y-m-d' }}" data-client-id="{{ order.client.id }}"
                   data-bs-toggle="modal" data-bs-target="#editOrderModal">
                   Edit
@@ -860,26 +208,26 @@
                   Delete
                 </button>
 
-                <!--  PROFESSIONAL: Logistics Action Buttons -->
+                <!-- 🏆 PROFESSIONAL: Logistics Action Buttons -->
                 {% if order.status == 'quality_checking' %}
                 <form method="post" action="{% url 'advance_order_status' order.id %}" style="display:inline;">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-outline-info" title="Mark as Ready for Shipment">
-                     Ready
+                    📦 Ready
                   </button>
                 </form>
                 {% elif order.status == 'ready_for_shipment' %}
                 <form method="post" action="{% url 'advance_order_status' order.id %}" style="display:inline;">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-outline-warning" title="Mark as Shipped">
-                     Ship
+                    🚚 Ship
                   </button>
                 </form>
                 {% elif order.status == 'shipped' %}
                 <form method="post" action="{% url 'advance_order_status' order.id %}" style="display:inline;">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-sm btn-outline-success" title="Mark as Completed">
-                     Done
+                    ✅ Done
                   </button>
                 </form>
                 {% endif %}
@@ -887,7 +235,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="9" class="text-center py-4">No orders yet.</td>
+              <td colspan="8" class="text-center text-muted py-4">No orders yet.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -897,17 +245,16 @@
   </div>
 
   <!-- DELETE ORDER MODAL -->
-  <div class="modal fade" id="deleteOrderModal" tabindex="-1" aria-labelledby="deleteOrderModalLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="deleteOrderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="deleteOrderModalLabel">Confirm Deletion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title text-danger">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          Are you sure you want to delete Order <strong id="delete-order-id-display"></strong>?<br>
-          This action cannot be undone.
+          Are you sure you want to delete Order <strong id="delete-order-id-display" class="text-white"></strong>?<br>
+          <small class="text-muted">This action cannot be undone.</small>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -921,46 +268,54 @@
       </div>
     </div>
   </div>
-
+  
   <!-- EDIT ORDER MODAL -->
-  <div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
+  <div class="modal fade" id="editOrderModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="editOrderModalLabel">Edit Order</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <form id="editOrderForm" method="post">
           {% csrf_token %}
-          <!-- Hidden ID to know which order to update -->
           <input type="hidden" name="order_id" id="edit-internal-id">
-          <!-- Hidden Client ID to ensure order stays attached to correct client -->
           <input type="hidden" name="client" id="edit-client-id">
           <input type="hidden" name="edit_order" value="1">
 
           <div class="modal-body">
+            <!-- Order ID - More Visible -->
             <div class="mb-3">
               <label class="form-label">Order ID</label>
-              <input type="text" class="form-control" id="edit-display-id" disabled>
+              <input type="text" class="form-control fw-bold text-primary" id="edit-display-id" disabled style="background: rgba(99, 102, 241, 0.1); font-size: 1.1rem;">
             </div>
+            
+            <!-- Fabric Type - Dropdown -->
             <div class="mb-3">
               <label class="form-label">Fabric Type</label>
-              <input type="text" class="form-control" name="fabric_type" id="edit-fabric" required>
+              <select name="fabric_type" class="form-select" id="edit-fabric" required>
+                <option value="">Select Fabric Type</option>
+                <option value="softener">Softener</option>
+                <option value="hardener">Hardener</option>
+                <option value="binder">Binder</option>
+                <option value="resin">Resin</option>
+                <option value="sizing agents">Sizing Agents</option>
+              </select>
             </div>
+            
             <div class="row">
               <div class="col-6 mb-3">
-                <label class="form-label">Quantity</label>
-                <input type="number" class="form-control" name="quantity" id="edit-qty">
+                <label class="form-label">Quantity (Kg)</label>
+                <input type="number" class="form-control" name="quantity" id="edit-qty" min="1" step="0.01" required>
               </div>
               <div class="col-6 mb-3">
                 <label class="form-label">Payment ($)</label>
-                <input type="number" class="form-control" name="payment" id="edit-payment" step="0.01">
+                <input type="number" class="form-control" name="payment" id="edit-payment" step="0.01" min="0" required>
               </div>
             </div>
-          <!-- Status dropdown removed! Due Date now takes full width -->
             <div class="mb-3">
               <label class="form-label">Due Date</label>
-              <input type="date" class="form-control" name="due_date" id="edit-due_date">
+              <input type="date" class="form-control" name="due_date" id="edit-due_date" required>
             </div>
           </div>
           <div class="modal-footer">
@@ -971,7 +326,6 @@
       </div>
     </div>
   </div>
-
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -999,7 +353,6 @@
       const editButtons = document.querySelectorAll('.edit-order-btn');
       const editModal = new bootstrap.Modal(document.getElementById('editOrderModal'));
 
-      // Fields to populate
       const e_internal_id = document.getElementById('edit-internal-id');
       const e_client_id = document.getElementById('edit-client-id');
       const e_display_id = document.getElementById('edit-display-id');
@@ -1010,7 +363,6 @@
 
       editButtons.forEach(btn => {
         btn.addEventListener('click', function () {
-          // Grab data attributes from button
           e_internal_id.value = this.getAttribute('data-internal-id');
           e_display_id.value = this.getAttribute('data-order-id');
           e_client_id.value = this.getAttribute('data-client-id');
@@ -1026,5 +378,4 @@
   </script>
 
 </body>
-
 </html>

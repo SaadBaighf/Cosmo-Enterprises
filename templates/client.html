@@ -1,162 +1,149 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clients | Cosmo Enterprises</title>
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'css/client-dashboard.css' %}" rel="stylesheet">
-  <!-- SVG Favicon (for modern browsers) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <path d='M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z' fill='%230891b2'/>
-  <rect x='45' y='10' width='10' height='20' fill='%230891b2'/>
-  <circle cx='35' cy='60' r='4' fill='%23ffffff'/>
-  <circle cx='65' cy='50' r='3' fill='%23ffffff'/>
-  <circle cx='50' cy='70' r='3.5' fill='%23ffffff'/>
-  <line x1='35' y1='60' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-  <line x1='65' y1='50' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-</svg>" type="image/svg+xml" />
-
+  
+  <!-- Modern Dark Theme CSS -->
+  <link href="{% static 'css/modern-theme.css' %}" rel="stylesheet">
+  
+  <style>
+ body {
+      background: linear-gradient(135deg, #1e1b4b 0%, #3D32A6 50%, #312e81 100%) !important;
+    }
+    .client-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .client-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    /* Fix for form validation feedback in dark mode */
+    .invalid-feedback {
+      display: none;
+      color: #f87171;
+      font-size: 0.875em;
+      margin-top: 0.25rem;
+    }
+    .is-invalid ~ .invalid-feedback {
+      display: block;
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- Navbar (Identical to Order Dashboard) -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm border-bottom">
+  <!-- Lumen Style Navbar -->
+  <nav class="navbar navbar-expand-lg lumen-navbar sticky-top">
     <div class="container">
-      <!-- Professional SVG Logo -->
-      <!-- Professional SVG Logo -->
       <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
-        <svg width="36" height="36" viewBox="0 0 100 100">
-          <path d="M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z" fill="#0891b2"
-            stroke="#0891b2" stroke-width="2" />
-          <rect x="45" y="10" width="10" height="20" fill="#0891b2" stroke="#0891b2" stroke-width="2" />
-          <circle cx="35" cy="60" r="4" fill="#ffffff" />
-          <circle cx="65" cy="50" r="3" fill="#ffffff" />
-          <circle cx="50" cy="70" r="3.5" fill="#ffffff" />
-          <line x1="35" y1="60" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-          <line x1="65" y1="50" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-        </svg>
-        <span class="fw-bold" style="color: #0891b2; font-size: 1.4rem;">Cosmo Enterprises</span>
+        <span class="lumen-brand">Cosmo <span class="lumen-brand-sub">/ Enterprises</span></span>
       </a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#lumenNav">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/client/">Clients</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/order/">Orders</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/inventory/">Inventory</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/batch/">Batches</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/finance/">Finance</a>
-          </li>
-          <a class="nav-link" href="{% url 'logout' %}" title="Logout">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</a>
+      <div class="collapse navbar-collapse justify-content-center" id="lumenNav">
+        <ul class="navbar-nav lumen-nav">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/client/">Clients</a></li>
+          <li class="nav-item"><a class="nav-link" href="/order/">Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/batch/">Batches</a></li>
+          <li class="nav-item"><a class="nav-link" href="/inventory/">Inventory</a></li>
+          <li class="nav-item"><a class="nav-link" href="/finance/">Finance</a></li>
         </ul>
+      </div>
+      <div class="d-none d-lg-flex align-items-center gap-4 ms-auto">
+        <a href="{% url 'logout' %}" class="lumen-text-link">Logout</a>
+        <a href="/order/" class="lumen-btn">
+          New Order
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+        </a>
       </div>
     </div>
   </nav>
 
-  <!-- Header -->
-  <section class="header-section">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h2>Client Dashboard</h2>
-          <p class="text-muted mb-0">Manage your chemical industry clients</p>
-        </div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal">
-          + Add Client
-        </button>
+  <!-- Sub-page Header -->
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h2 class="fw-bold mb-1 text-white">Client Management</h2>
+        <!-- <p class="text-muted mb-0">Manage your chemical industry clients and contacts</p> -->
       </div>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClientModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1" style="vertical-align: text-bottom;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Client
+      </button>
     </div>
+  </div>
 
-    <!-- Success/Error Messages -->
-    {% if messages %}
-    <div class="container mt-3">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-      {% endfor %}
+  <!-- Messages -->
+  {% if messages %}
+  <div class="container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    {% endif %}
-  </section>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- Stats Summary -->
-  <div class="container mt-4">
+  <div class="container mb-4">
     <div class="row g-3">
       <div class="col-md-3">
-        <div class="card clients-table-card text-center p-3">
-          <h3 class="mb-0">{{ total_clients }}</h3>
-          <small class="text-muted">Total Clients</small>
-        </div>
+        <div class="stat-card"><h3>{{ total_clients }}</h3><small>Total Clients</small></div>
       </div>
       <div class="col-md-3">
-        <div class="card clients-table-card text-center p-3">
-          <h3 class="mb-0">{{ active_clients }}</h3>
-          <small class="text-muted">Active</small>
-        </div>
+        <div class="stat-card"><h3>{{ active_clients }}</h3><small>Active</small></div>
       </div>
       <div class="col-md-3">
-        <div class="card clients-table-card text-center p-3">
-          <h3 class="mb-0">{{ inactive_clients }}</h3>
-          <small class="text-muted">Inactive</small>
-        </div>
+        <div class="stat-card"><h3>{{ inactive_clients }}</h3><small>Inactive</small></div>
       </div>
       <div class="col-md-3">
-        <div class="card clients-table-card text-center p-3">
-          <h3 class="mb-0">{{ this_month_clients }}</h3>
-          <small class="text-muted">This Month</small>
-        </div>
+        <div class="stat-card"><h3>{{ this_month_clients }}</h3><small>This Month</small></div>
       </div>
     </div>
   </div>
 
   <!-- Filters & Search -->
-  <div class="container mt-4">
-    <form method="get" class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-      <input type="text" name="search" class="form-control" placeholder="Search clients..."
-        value="{{ request.GET.search }}">
-
-      <select name="status" onchange="this.form.submit()" class="form-select">
+  <div class="container mb-4">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center p-3 rounded-3" style="background: var(--bg-surface); border: 1px solid var(--border-color);">
+      <input type="text" name="search" class="form-control flex-grow-1" placeholder="Search clients..." value="{{ request.GET.search }}">
+      <select name="status" onchange="this.form.submit()" class="form-select" style="max-width: 200px;">
         <option value="">All Status</option>
         <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>Active</option>
         <option value="inactive" {% if request.GET.status == "inactive" %}selected{% endif %}>Inactive</option>
       </select>
-
-      <a href="{% url 'client_dashboard' %}" class="btn btn-outline-secondary">Clear</a>
+      <a href="{% url 'client_dashboard' %}" class="btn btn-modern-outline btn-sm">Clear</a>
     </form>
   </div>
 
   <!-- Clients Table -->
   <div class="container mb-5">
-    <div class="card clients-table-card">
+    <div class="content-card">
       <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table modern-table mb-0">
           <thead>
             <tr>
               <th>Client</th>
@@ -172,54 +159,49 @@
             <tr>
               <td>
                 <div class="d-flex align-items-center">
-                  <!-- Avatar -->
-                  <div class="client-avatar">
+                  <div class="client-avatar me-3">
                     {% if client.avatar %}
-                    <img src="{{ client.avatar.url }}" alt="{{ client.name }}" class="img-fluid rounded-circle"
-                      style="width: 40px; height: 40px; object-fit: cover" />
-                    {% else %} {{ client.get_initials }} {% endif %}
+                      <img src="{{ client.avatar.url }}" alt="{{ client.name }}" />
+                    {% else %}
+                      {{ client.get_initials }}
+                    {% endif %}
                   </div>
-                  <div class="ms-3">
-                    <strong>{{ client.name }}</strong><br />
+                  <div>
+                    <strong class="text-white">{{ client.name }}</strong><br />
                     <small class="text-muted">ID: CL-{{ client.id }}</small>
                   </div>
                 </div>
               </td>
-              <td>{{ client.email }}</td>
-              <td>{{ client.phone }}</td>
-              <td>{{ client.company|default:"—" }}</td>
+              <td class="text-secondary">{{ client.email }}</td>
+              <td class="text-secondary">{{ client.phone }}</td>
+              <td class="text-secondary">{{ client.company|default:"—" }}</td>
               <td>
                 {% if client.is_active %}
-                <span class="status-active">Active</span>
+                  <span class="badge-modern badge-active">Active</span>
                 {% else %}
-                <span class="status-inactive">Inactive</span>
+                  <span class="badge-modern badge-inactive">Inactive</span>
                 {% endif %}
               </td>
               <td>
-                <a href="{% url 'add_order_for_client' client.id %}" class="btn btn-sm btn-outline-success me-1">+
-                  Order</a>
-
-                <button type="button" class="btn btn-sm btn-outline-primary me-1 edit-client-btn"
+                <a href="{% url 'add_order_for_client' client.id %}" class="btn btn-sm btn-modern-outline me-1" title="Add Order">+ Order</a>
+                <button type="button" class="btn btn-sm btn-modern-outline me-1 edit-client-btn"
                   data-id="{{ client.id }}" data-name="{{ client.name }}" data-email="{{ client.email }}"
                   data-phone="{{ client.phone }}" data-company="{{ client.company }}"
-                  data-is_active="{{ client.is_active|yesno:" true,false" }}"
-                  data-avatar-url="{% if client.avatar %}{{ client.avatar.url }}{% endif %}" data-bs-toggle="modal"
-                  data-bs-target="#addClientModal">
+                  data-is_active="{{ client.is_active|yesno:'true,false' }}"
+                  data-avatar-url="{% if client.avatar %}{{ client.avatar.url }}{% endif %}" 
+                  data-bs-toggle="modal" data-bs-target="#addClientModal">
                   Edit
                 </button>
-
                 <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
-                  data-client-name="{{ client.name }}" data-client-id="{{ client.id }}" data-bs-toggle="modal"
-                  data-bs-target="#deleteConfirmModal">
+                  data-client-name="{{ client.name }}" data-client-id="{{ client.id }}" 
+                  data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
                   Delete
                 </button>
               </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" class="text-center text-muted py-4">
-                No clients found.
-              </td>
+              <td colspan="6" class="text-center text-muted py-4">No clients found.</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -228,123 +210,85 @@
     </div>
   </div>
 
-
-<!-- ADD/EDIT CLIENT MODAL -->
-<div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modal-title">Add New Client</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form id="clientForm" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <!-- Hidden field to store client ID during edit -->
-        <input type="hidden" name="client_id" id="form-client-id">
-
-        <div class="modal-body">
-          <!-- Name Field -->
-          <div class="mb-3">
-            <label class="form-label">Name *</label>
-            {{ form.name }}
-            {% if form.name.errors %}
-              <div class="text-danger mt-1">{{ form.name.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          
-          <!-- Email Field -->
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            {{ form.email }}
-            {% if form.email.errors %}
-              <div class="text-danger mt-1">{{ form.email.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          
-          <!-- Phone Field -->
-          <div class="mb-3">
-            <label class="form-label">Phone</label>
-            {{ form.phone }}
-            {% if form.phone.errors %}
-              <div class="text-danger mt-1">{{ form.phone.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          
-          <!-- Company Field -->
-          <div class="mb-3">
-            <label class="form-label">Company</label>
-            {{ form.company }}
-            {% if form.company.errors %}
-              <div class="text-danger mt-1">{{ form.company.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          
-          <!-- Avatar Field -->
-          <div class="mb-3">
-            <label class="form-label">Avatar</label>
-            {{ form.avatar }}
-            {% if form.avatar.errors %}
-              <div class="text-danger mt-1">{{ form.avatar.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-          
-          <!-- Active Checkbox -->
-          <div class="mb-3 form-check">
-            {{ form.is_active }}
-            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
-            {% if form.is_active.errors %}
-              <div class="text-danger mt-1">{{ form.is_active.errors|join:", " }}</div>
-            {% endif %}
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="modal-submit-btn">Save Client</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-  <!-- DELETE CONFIRMATION MODAL -->
-  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
-    aria-hidden="true">
+  <!-- ADD/EDIT CLIENT MODAL -->
+  <div class="modal fade" id="addClientModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Deletion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="modal-title">Add New Client</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body">
-          Are you sure you want to delete <strong id="delete-client-name">this client</strong>?<br>
-          This action cannot be undone.
+        <form id="clientForm" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="client_id" id="form-client-id">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Name *</label>
+              {{ form.name }}
+              <div class="invalid-feedback">Name is required.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+              <div class="invalid-feedback">Enter a valid email address.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              {{ form.phone }}
+              <div class="invalid-feedback">Phone must be 10-15 digits.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Company</label>
+              {{ form.company }}
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Avatar</label>
+              {{ form.avatar }}
+              <div id="avatar-preview" class="mt-2" style="display: none;">
+                <img id="avatar-img" src="" alt="Preview" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+              </div>
+            </div>
+            <div class="mb-3 form-check">
+              {{ form.is_active }}
+              <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Active</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="modal-submit-btn">Save Client</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRMATION MODAL -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-danger">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <form id="deleteForm" method="post" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="client_id" id="delete-client-id">
-            <input type="hidden" name="delete_client" value="1">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="client_id" id="delete-client-id">
+          <div class="modal-body">
+            Are you sure you want to delete <strong id="delete-client-name" class="text-white">this client</strong>?<br>
+            <small class="text-muted">This action cannot be undone.</small>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-danger">Delete Client</button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Your existing JS file -->
   <script src="{% static 'js/client-dashboard.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const hasValidationErrors = document.querySelector('#clientForm .text-danger');
-      if (hasValidationErrors) {
-        const addClientModal = new bootstrap.Modal(document.getElementById('addClientModal'));
-        addClientModal.show();
-      }
-    });
-  </script>
 </body>
-
 </html>
