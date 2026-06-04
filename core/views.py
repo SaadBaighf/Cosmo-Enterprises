@@ -387,9 +387,10 @@ def add_order_for_client(request, client_id):
     if request.method == "POST":
         form = OrderForm(request.POST)
         if form.is_valid():
-            print("Form errors:", form.errors)  # 👈 Add this
+            # Use commit=False so we can set the status before saving to DB
             order = form.save(commit=False)
-            order.client = client  # Link to client
+            order.client = client
+            order.status = 'sample_preparing'
             order.save()
             
             # ✅ ADD ACTIVITY LOG FOR NEW ORDER
@@ -903,6 +904,11 @@ def batch_dashboard(request):
                     messages.error(request, "Operator name is required.")
                 else:
                     Batch.objects.create(order=order, operator=operator)
+                    
+                    # 🪄 MAGIC: Automatically update Order Status to Production
+                    order.status = 'production_starts'
+                    order.save()
+                    
                     messages.success(request, f"Batch started successfully for {order.order_id}.")
             except Order.DoesNotExist:
                 messages.error(request, "Order not found.")
@@ -919,9 +925,17 @@ def batch_dashboard(request):
                 batch.status = new_status
                 batch.notes = notes
                 
-                # If completed or failed, record the end time
+                # If completed or failed, record the end time and update Order
                 if new_status in ['completed', 'failed']:
                     batch.end_time = timezone.now()
+                    
+                    # 🪄 MAGIC: Automatically update Order Status based on Batch result
+                    if new_status == 'completed':
+                        batch.order.status = 'quality_checking'
+                        batch.order.save()
+                    elif new_status == 'failed':
+                        batch.order.status = 'sample_preparing' # Revert for rework
+                        batch.order.save()
                 
                 batch.save()
                 messages.success(request, f"Batch {batch.batch_number} marked as {new_status}.")
@@ -929,6 +943,32 @@ def batch_dashboard(request):
                 messages.error(request, "Batch not found.")
             return redirect('batch_dashboard')
 
+                # --- 🏆 RETRY FAILED BATCH ---
+        elif 'retry_batch' in request.POST:
+            batch_id = request.POST.get('batch_id')
+            try:
+                batch = Batch.objects.get(id=batch_id)
+                
+                # Ensure we only retry if it's actually failed
+                if batch.status == 'failed':
+                    # 1. Reset the Batch back to In Progress
+                    batch.status = 'in_progress'
+                    batch.end_time = None  # Clear the end time
+                    batch.notes = "Retried: " + (batch.notes or "") # Keep history of why it failed
+                    batch.save()
+                    
+                    # 🪄 MAGIC: Revert the Order Status back to Production Starts
+                    batch.order.status = 'production_starts'
+                    batch.order.save()
+                    
+                    messages.success(request, f"Batch {batch.batch_number} has been reset to In Progress. Production resumed.")
+                else:
+                    messages.error(request, "Only failed batches can be retried.")
+                    
+            except Batch.DoesNotExist:
+                messages.error(request, "Batch not found.")
+            return redirect('batch_dashboard')
+        
         # --- DELETE BATCH ---
         elif 'delete_batch' in request.POST:
             batch_id = request.POST.get('batch_id')
@@ -981,3 +1021,26 @@ def batch_dashboard(request):
     }
 
     return render(request, 'batch.html', context)
+
+
+@login_required
+def advance_order_status(request, order_id):
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id)
+        
+        # Define the logical progression
+        status_flow = {
+            'quality_checking': 'ready_for_shipment',
+            'ready_for_shipment': 'shipped',
+            'shipped': 'completed'
+        }
+        
+        next_status = status_flow.get(order.status)
+        if next_status:
+            order.status = next_status
+            order.save()
+            messages.success(request, f"Order {order.order_id} advanced to {next_status.replace('_', ' ').title()}.")
+        else:
+            messages.error(request, "Cannot advance this order further.")
+            
+    return redirect('order_dashboard')

@@ -60,7 +60,8 @@ class ClientForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['fabric_type', 'quantity', 'due_date', 'status', 'payment']
+        # 'status' is removed to enforce system-driven workflow
+        fields = ['fabric_type', 'quantity', 'due_date', 'payment']
         widgets = {
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'payment': forms.NumberInput(attrs={'step': '0.01'}),

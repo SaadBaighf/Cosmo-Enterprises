@@ -844,21 +844,45 @@
                 {% endif %}
               </td>
               <td>
-                <!-- Edit Button -->
-                <button type="button" class="btn btn-sm btn-outline-primary edit-order-btn"
+                <!-- Edit Button (Removed data-status) -->
+                <button type="button" class="btn btn-sm btn-outline-primary me-1 edit-order-btn"
                   data-internal-id="{{ order.id }}" data-order-id="{{ order.order_id }}"
                   data-fabric="{{ order.fabric_type }}" data-qty="{{ order.quantity }}"
-                  data-payment="{{ order.payment }}" data-status="{{ order.status }}"
+                  data-payment="{{ order.payment }}"
                   data-due_date="{{ order.due_date|date:'Y-m-d' }}" data-client-id="{{ order.client.id }}"
                   data-bs-toggle="modal" data-bs-target="#editOrderModal">
                   Edit
                 </button>
 
-                <button type="button" class="btn btn-sm btn-outline-danger delete-order-btn"
+                <button type="button" class="btn btn-sm btn-outline-danger me-1 delete-order-btn"
                   data-order-id="{{ order.order_id }}" data-internal-id="{{ order.id }}" data-bs-toggle="modal"
                   data-bs-target="#deleteOrderModal">
                   Delete
                 </button>
+
+                <!--  PROFESSIONAL: Logistics Action Buttons -->
+                {% if order.status == 'quality_checking' %}
+                <form method="post" action="{% url 'advance_order_status' order.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-info" title="Mark as Ready for Shipment">
+                     Ready
+                  </button>
+                </form>
+                {% elif order.status == 'ready_for_shipment' %}
+                <form method="post" action="{% url 'advance_order_status' order.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-warning" title="Mark as Shipped">
+                     Ship
+                  </button>
+                </form>
+                {% elif order.status == 'shipped' %}
+                <form method="post" action="{% url 'advance_order_status' order.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-success" title="Mark as Completed">
+                     Done
+                  </button>
+                </form>
+                {% endif %}
               </td>
             </tr>
             {% empty %}
@@ -933,22 +957,10 @@
                 <input type="number" class="form-control" name="payment" id="edit-payment" step="0.01">
               </div>
             </div>
-            <div class="row">
-              <div class="col-6 mb-3">
-                <label class="form-label">Due Date</label>
-                <input type="date" class="form-control" name="due_date" id="edit-due_date">
-              </div>
-              <div class="col-6 mb-3">
-                <label class="form-label">Status</label>
-                <select name="status" class="form-select" id="edit-status">
-                  <option value="sample_preparing">Sample Preparing</option>
-                  <option value="production_starts">Production Starts</option>
-                  <option value="quality_checking">Quality Checking</option>
-                  <option value="ready_for_shipment">Ready for Shipment</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
+          <!-- Status dropdown removed! Due Date now takes full width -->
+            <div class="mb-3">
+              <label class="form-label">Due Date</label>
+              <input type="date" class="form-control" name="due_date" id="edit-due_date">
             </div>
           </div>
           <div class="modal-footer">
@@ -994,7 +1006,6 @@
       const e_fabric = document.getElementById('edit-fabric');
       const e_qty = document.getElementById('edit-qty');
       const e_payment = document.getElementById('edit-payment');
-      const e_status = document.getElementById('edit-status');
       const e_due_date = document.getElementById('edit-due_date');
 
       editButtons.forEach(btn => {
@@ -1006,7 +1017,6 @@
           e_fabric.value = this.getAttribute('data-fabric');
           e_qty.value = this.getAttribute('data-qty');
           e_payment.value = this.getAttribute('data-payment');
-          e_status.value = this.getAttribute('data-status');
           e_due_date.value = this.getAttribute('data-due_date');
 
           editModal.show();

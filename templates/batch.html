@@ -153,12 +153,25 @@
                   <span class="status-failed">Failed</span>
                 {% endif %}
               </td>
-              <td>
+                <td>
                 {% if batch.status == 'in_progress' %}
                 <button type="button" class="btn btn-sm btn-outline-success me-1 update-status-btn" data-bs-toggle="modal" data-bs-target="#updateStatusModal" data-batch-id="{{ batch.id }}" data-batch-num="{{ batch.batch_number }}">
                   Complete
                 </button>
                 {% endif %}
+
+                <!-- 🏆 PROFESSIONAL: RETRY BUTTON (Only shows for failed batches) -->
+                {% if batch.status == 'failed' %}
+                <form method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="retry_batch" value="1">
+                  <input type="hidden" name="batch_id" value="{{ batch.id }}">
+                  <button type="submit" class="btn btn-sm btn-outline-warning me-1" title="Retry this failed batch">
+                     Retry
+                  </button>
+                </form>
+                {% endif %}
+
                 <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-batch-id="{{ batch.id }}" data-batch-num="{{ batch.batch_number }}">
                   Delete
                 </button>
@@ -225,8 +238,8 @@
             <div class="mb-3">
               <label class="form-label">New Status *</label>
               <select name="status" class="form-select" required>
-                <option value="completed">✅ Completed</option>
-                <option value="failed">❌ Failed</option>
+                <option value="completed"> Completed</option>
+                <option value="failed"> Failed</option>
               </select>
             </div>
             <div class="mb-3">

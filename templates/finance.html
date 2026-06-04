@@ -342,12 +342,20 @@
                     {% endif %}
                 </td>
                 <td>
-                  <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#paymentModal" data-order-id="{{ order.id }}"
-                    data-order-ref="ORD-{{ order.order_id }}" data-current-paid="{{ order.total_paid|floatformat:2 }}"
-                    data-total="{{ order.payment }}">
-                    Record Payment
-                  </button>
+                  {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
+                    <!--  UNLOCKED: Order is ready or shipped, allow payment -->
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                      data-bs-target="#paymentModal" data-order-id="{{ order.id }}"
+                      data-order-ref="ORD-{{ order.order_id }}" data-current-paid="{{ order.total_paid|floatformat:2 }}"
+                      data-total="{{ order.payment }}">
+                       Record Payment
+                    </button>
+                  {% else %}
+                    <!--  LOCKED: Order is still in the factory -->
+                    <span class="badge bg-secondary" title="Payment can be collected once production is complete">
+                       In Production
+                    </span>
+                  {% endif %}
                 </td>
                 <td>
                   {% if order.invoices.exists %}
@@ -368,7 +376,7 @@
               </tr>
               {% endfor %}
             </tbody>
-          </table>
+          </table> 
         </div>
       </div>
     </div>
