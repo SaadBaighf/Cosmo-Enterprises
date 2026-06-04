@@ -198,3 +198,29 @@ class Invoice(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Batch(models.Model):
+    STATUS_CHOICES = [
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='batch')
+    batch_number = models.CharField(max_length=50, unique=True, blank=True)
+    operator = models.CharField(max_length=100)
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_progress')
+    notes = models.TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        # Auto-generate batch number if not provided (e.g., BATCH-0001)
+        if not self.batch_number:
+            last_batch = Batch.objects.order_by('-id').first()
+            next_id = 1 if not last_batch else last_batch.id + 1
+            self.batch_number = f"BATCH-{next_id:04d}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.batch_number} - {self.order.order_id}"

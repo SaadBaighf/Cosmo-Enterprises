@@ -144,13 +144,14 @@
         <line x1="35" y1="60" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
         <line x1="65" y1="50" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
       </svg>
-      <span class="fw-bold">Cosmo Enterprises/span>
+      <span class="fw-bold">Cosmo Enterprises </span>
     </a>
     <div class="navbar-nav ms-auto">
       <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
       <a class="nav-link {% if request.path == '/client/' %}active{% endif %}" href="/client/">Clients</a>
       <a class="nav-link {% if request.path == '/order/' %}active{% endif %}" href="/order/">Orders</a>
       <a class="nav-link {% if request.path == '/inventory/' %}active{% endif %}" href="/inventory/">Inventory</a>
+      <a class="nav-link {% if request.path == '/batch/' %}active{% endif %}" href="/batch/">Batches</a>
       <a class="nav-link {% if request.path == '/finance/' %}active{% endif %}" href="/finance/">Finance</a>
       <a class="nav-link" href="{% url 'logout' %}" title="Logout">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -164,11 +165,13 @@
 </nav>
 
   <!-- Header Section -->
-  <div class="header-section" style="height: 155px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div style="position: relative; left: 70px;">
-        <h1 class="display-5" style="font-weight: 800; font-size: 40px;"> Finance Dashboard</h1>
-        <p class="text-muted mb-0">Track client invoices and payments</p>
+  <div class="header-section">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="display-5" style="font-weight: 800; font-size: 40px;">Finance Dashboard</h1>
+          <p class="text-muted mb-0">Track client invoices and payments</p>
+        </div>
       </div>
     </div>
   </div>

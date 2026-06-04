@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Client, Invoice, Order, Material, ActivityLog
+from .models import Client, Invoice, Order, Material, ActivityLog, Batch
 from .forms import ClientForm, OrderForm
 from  django.http import JsonResponse
 from django.urls import reverse
@@ -883,3 +883,101 @@ def admin_login(request):
             messages.error(request, "Invalid username or password.")
     
     return render(request, 'admin_login.html')
+
+@login_required
+def batch_dashboard(request):
+    # 1. Handle POST requests (Create, Update, Delete)
+    if request.method == 'POST':
+        
+        # --- CREATE NEW BATCH ---
+        if 'create_batch' in request.POST:
+            order_id = request.POST.get('order_id')
+            operator = request.POST.get('operator', '').strip()
+            
+            try:
+                order = Order.objects.get(id=order_id)
+                # Prevent creating multiple batches for the same order
+                if hasattr(order, 'batch'):
+                    messages.error(request, f"Order {order.order_id} already has an active batch.")
+                elif not operator:
+                    messages.error(request, "Operator name is required.")
+                else:
+                    Batch.objects.create(order=order, operator=operator)
+                    messages.success(request, f"Batch started successfully for {order.order_id}.")
+            except Order.DoesNotExist:
+                messages.error(request, "Order not found.")
+            return redirect('batch_dashboard')
+
+        # --- UPDATE BATCH STATUS (Complete / Fail) ---
+        elif 'update_status' in request.POST:
+            batch_id = request.POST.get('batch_id')
+            new_status = request.POST.get('status')
+            notes = request.POST.get('notes', '')
+            
+            try:
+                batch = Batch.objects.get(id=batch_id)
+                batch.status = new_status
+                batch.notes = notes
+                
+                # If completed or failed, record the end time
+                if new_status in ['completed', 'failed']:
+                    batch.end_time = timezone.now()
+                
+                batch.save()
+                messages.success(request, f"Batch {batch.batch_number} marked as {new_status}.")
+            except Batch.DoesNotExist:
+                messages.error(request, "Batch not found.")
+            return redirect('batch_dashboard')
+
+        # --- DELETE BATCH ---
+        elif 'delete_batch' in request.POST:
+            batch_id = request.POST.get('batch_id')
+            try:
+                Batch.objects.filter(id=batch_id).delete()
+                messages.success(request, "Batch deleted successfully.")
+            except Exception as e:
+                messages.error(request, "Failed to delete batch.")
+            return redirect('batch_dashboard')
+
+    # 2. Handle GET requests (Display Data)
+    
+    # Base query: Get all batches and pull related Order & Client data efficiently
+    batches = Batch.objects.select_related('order', 'order__client').all()
+    
+    # --- SEARCH & FILTER LOGIC ---
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    if search_query:
+        batches = batches.filter(
+            Q(batch_number__icontains=search_query) |
+            Q(order__order_id__icontains=search_query) |
+            Q(operator__icontains=search_query)
+        )
+
+    if status_filter:
+        batches = batches.filter(status=status_filter)
+
+    # --- CALCULATE STATS (Based on ALL batches, not just filtered) ---
+    all_batches = Batch.objects.all()
+    total_batches = all_batches.count()
+    in_progress = all_batches.filter(status='in_progress').count()
+    completed = all_batches.filter(status='completed').count()
+    failed = all_batches.filter(status='failed').count()
+
+    # --- GET AVAILABLE ORDERS FOR "START BATCH" MODAL ---
+    # Only show orders that are in production and DON'T have a batch yet
+    available_orders = Order.objects.filter(
+        status__in=['sample_preparing', 'production_starts', 'quality_checking']
+    ).exclude(batch__isnull=False)
+
+    context = {
+        'batches': batches,
+        'total_batches': total_batches,
+        'in_progress': in_progress,
+        'completed': completed,
+        'failed': failed,
+        'available_orders': available_orders,
+    }
+
+    return render(request, 'batch.html', context)

@@ -60,6 +60,9 @@
             <a class="nav-link active" href="/inventory/">Inventory</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="/batch/">Batches</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="/finance/">Finance</a>
           </li>
           <a class="nav-link" href="{% url 'logout' %}" title="Logout">
@@ -173,7 +176,7 @@
                   <!-- <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 9l-9-9-9-9 9-9 9 9m0 18v-6a3 3 0 00-3-3 0H6a3 3 0 00-3 3v6" />
                   </svg> -->
-                  ⚠️ Contact Vendor
+                   Contact Vendor
                   </span>
                   {% endif %}
               </h6>
@@ -218,7 +221,7 @@
               <span class="quantity-threshold">
                 / {{ material.max_quantity }} {{ material.unit }}
                 {% if material.show_warning %}
-                <span class="badge-warning">⚠️ Below threshold</span>
+                <span class="badge-warning">Below threshold</span>
                 {% endif %}
               </span>
             </div>
