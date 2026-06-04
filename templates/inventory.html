@@ -1,395 +1,351 @@
 {% load static %}
-{% load math_extras %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory | Cosmo Enterprises </title>
+  <title>Inventory | Cosmo Enterprises</title>
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'css/inventory-dashboard.css' %}" rel="stylesheet">
-  <!-- SVG Favicon (for modern browsers) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <path d='M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z' fill='%230891b2'/>
-  <rect x='45' y='10' width='10' height='20' fill='%230891b2'/>
-  <circle cx='35' cy='60' r='4' fill='%23ffffff'/>
-  <circle cx='65' cy='50' r='3' fill='%23ffffff'/>
-  <circle cx='50' cy='70' r='3.5' fill='%23ffffff'/>
-  <line x1='35' y1='60' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-  <line x1='65' y1='50' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-</svg>" type="image/svg+xml" />
+  
+  <!-- Modern Dark Theme CSS -->
+  <link href="{% static 'css/modern-theme.css' %}" rel="stylesheet">
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e1b4b 0%, #3D32A6 50%, #312e81 100%) !important;
+    }
+    
+    /* Inventory Status Badges - Dark Mode Optimized */
+    .badge-in-stock {
+      background: rgba(74, 222, 128, 0.15) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(74, 222, 128, 0.3) !important;
+    }
+    .badge-low-stock {
+      background: rgba(251, 191, 36, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    .badge-out-of-stock {
+      background: rgba(248, 113, 113, 0.15) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white">
+  <!-- Lumen Style Navbar -->
+  <nav class="navbar navbar-expand-lg lumen-navbar sticky-top">
     <div class="container">
-      <!-- Professional SVG Logo -->
       <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
-        <svg width="36" height="36" viewBox="0 0 100 100">
-          <path d="M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z" fill="#0891b2" />
-          <rect x="45" y="10" width="10" height="20" fill="#0891b2" />
-          <circle cx="35" cy="60" r="4" fill="#ffffff" />
-          <circle cx="65" cy="50" r="3" fill="#ffffff" />
-          <circle cx="50" cy="70" r="3.5" fill="#ffffff" />
-          <line x1="35" y1="60" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-          <line x1="65" y1="50" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
+        <svg width="24" height="24" viewBox="0 0 100 100" class="me-2">
+          <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <path d="M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z" fill="url(#logoGrad)" />
+          <rect x="45" y="10" width="10" height="20" fill="url(#logoGrad)" />
         </svg>
-        <span class="fw-bold">Cosmo Enterprises</span>
+        <span class="lumen-brand">Cosmo <span class="lumen-brand-sub">/ Enterprises</span></span>
       </a>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#lumenNav">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/client/">Clients</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/order/">Orders</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/inventory/">Inventory</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/batch/">Batches</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/finance/">Finance</a>
-          </li>
-          <a class="nav-link" href="{% url 'logout' %}" title="Logout">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</a>
+      <div class="collapse navbar-collapse justify-content-center" id="lumenNav">
+        <ul class="navbar-nav lumen-nav">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/client/">Clients</a></li>
+          <li class="nav-item"><a class="nav-link" href="/order/">Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/batch/">Batches</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/inventory/">Inventory</a></li>
+          <li class="nav-item"><a class="nav-link" href="/finance/">Finance</a></li>
         </ul>
+      </div>
+      <div class="d-none d-lg-flex align-items-center gap-4 ms-auto">
+        <a href="{% url 'logout' %}" class="lumen-text-link">Logout</a>
+        <a href="/order/" class="lumen-btn">
+          New Order
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+        </a>
       </div>
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <div class="container mt-4">
-    <!-- Header Section -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
+  <!-- Sub-page Header -->
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
-        <h1 class="display-5 fw-bold"> Inventory Dashboard</h1>
-        <p class="text-muted mb-0">Monitor raw materials and stock levels</p>
+        <h2 class="fw-bold mb-1 text-white">Chemical Inventory</h2>
+        <p class="text-muted mb-0">Track raw materials, stock levels, and low-stock alerts</p>
       </div>
       <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
-        + Add Material
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1" style="vertical-align: text-bottom;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add Material
       </button>
     </div>
+  </div>
 
-    <!-- Success/Error Messages -->
-    {% if messages %}
-    <div class="mb-3">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-      {% endfor %}
+  <!-- Messages -->
+  {% if messages %}
+  <div class="container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
 
-    <!-- Stats Cards (Match Order Dashboard Style) -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-3">
-        <div class="card stat-card border-top border-4 border-primary">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ total_materials }}</h2>
-            <small class="text-muted">Total Materials</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card stat-card border-top border-4 border-success">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ in_stock }}</h2>
-            <small class="text-muted">In Stock</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card stat-card border-top border-4 border-warning">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ low_stock }}</h2>
-            <small class="text-muted">Low Stock</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card stat-card border-top border-4 border-danger">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ out_of_stock }}</h2>
-            <small class="text-muted">Out of Stock</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Search & Filter Bar (Like Order Dashboard) -->
-    <div class="card mb-4 p-3">
-      <form method="get" class="d-flex gap-3 align-items-center">
-        <input type="text" name="search" class="form-control" placeholder="Search materials..."
-          value="{{ request.GET.search }}">
-
-        <select name="status" class="form-select" style="max-width: 200px;" onchange="this.form.submit()">
-          <option value="" {% if not request.GET.status %}selected{% endif %}>All Status</option>
-<option value="in_stock" {% if request.GET.status == "in_stock" %}selected{% endif %}>In Stock</option>
-<option value="low_stock" {% if request.GET.status == "low_stock" %}selected{% endif %}>Low Stock</option>
-<option value="out_of_stock" {% if request.GET.status == "out_of_stock" %}selected{% endif %}>Out of Stock</option>
-        </select>
-
-        <!-- <button type="submit" class="btn btn-outline-secondary">Apply</button> -->
-        <a href="{% url 'inventory_dashboard' %}" class="btn btn-outline-secondary">Clear</a>
-      </form>
-    </div>
-
-    <!-- Inventory Table Header (Like Order Dashboard) -->
-    <div class="card mb-3">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Materials</h5>
-      </div>
-    </div>
-
-    <!-- Inventory Cards Grid -->
+  <!-- Stats Summary -->
+  <div class="container mb-4">
     <div class="row g-3">
-      {% for material in materials %}
-      <div class="col-md-4">
-        <div class="card inventory-card {{ material.status }}">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <h6 class="material-name">
-                {{ material.name }}
-                {% if material.quantity < material.threshold %} <span class="contact-vendor">
-                  <!-- <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 9l-9-9-9-9 9-9 9 9m0 18v-6a3 3 0 00-3-3 0H6a3 3 0 00-3 3v6" />
-                  </svg> -->
-                   Contact Vendor
-                  </span>
-                  {% endif %}
-              </h6>
-              <div class="dropdown">
-                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="dropdown"
-                  aria-expanded="false">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round">
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="12" cy="5" r="1" />
-                    <circle cx="12" cy="19" r="1" />
-                  </svg>
-                </button>
-                <ul class="dropdown-menu">
-                  <li>
-                    <button class="dropdown-item edit-material-btn" data-id="{{ material.id }}"
-                      data-name="{{ material.name }}" data-quantity="{{ material.quantity }}"
-                      data-unit="{{ material.unit }}" data-threshold="{{ material.threshold }}"
-                      data-max="{{ material.max_quantity }}" data-bs-toggle="modal" data-bs-target="#editMaterialModal">
-                      Edit
-                    </button>
-                  </li>
-                  <li>
-                    <button class="dropdown-item delete-material-btn" data-id="{{ material.id }}"
-                      data-name="{{ material.name }}" data-bs-toggle="modal" data-bs-target="#deleteMaterialModal">
-                      Delete
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
+      <div class="col-md-3">
+        <div class="stat-card"><h3>{{ total_materials }}</h3><small>Total Materials</small></div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card"><h3>{{ in_stock }}</h3><small>In Stock</small></div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card"><h3 class="text-warning">{{ low_stock_materials }}</h3><small>Low Stock</small></div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card"><h3 class="text-danger">{{ out_of_stock_materials }}</h3><small>Out of Stock</small></div>
+      </div>
+    </div>
+  </div>
 
-            <!-- Quantity Bar -->
-            <div class="quantity-bar-container">
-              <div class="quantity-bar {{ material.bar_class }}" style="width: {{ material.bar_width }}%;">
-              </div>
-            </div>
+  <!-- Filters & Search -->
+  <div class="container mb-4">
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center p-3 rounded-3" style="background: var(--bg-surface); border: 1px solid var(--border-color);">
+      <input type="text" name="search" class="form-control flex-grow-1" placeholder="Search materials..." value="{{ request.GET.search }}">
+      <select name="stock_status" onchange="this.form.submit()" class="form-select" style="max-width: 200px;">
+        <option value="">All Status</option>
+        <option value="in_stock" {% if request.GET.stock_status == "in_stock" %}selected{% endif %}>In Stock</option>
+        <option value="low_stock" {% if request.GET.stock_status == "low_stock" %}selected{% endif %}>Low Stock</option>
+        <option value="out_of_stock" {% if request.GET.stock_status == "out_of_stock" %}selected{% endif %}>Out of Stock</option>
+      </select>
+      <a href="{% url 'inventory_dashboard' %}" class="btn btn-modern-outline btn-sm">Clear</a>
+    </form>
+  </div>
 
-            <!-- Quantity Info -->
-            <div class="quantity-info mt-3">
-              <span class="quantity-value">{{ material.quantity }}</span>
-              <span class="quantity-threshold">
-                / {{ material.max_quantity }} {{ material.unit }}
-                {% if material.show_warning %}
-                <span class="badge-warning">Below threshold</span>
+  <!-- Inventory Table -->
+  <div class="container mb-5">
+    <div class="content-card">
+      <div class="table-responsive">
+        <table class="table modern-table mb-0">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Description</th>
+              <th>Quantity</th>
+              <th>Unit</th>
+              <th style="text-align: center;">Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for material in materials %}
+            <tr>
+              <td>
+                <strong class="text-white">{{ material.name }}</strong><br>
+                <small class="text-muted">ID: MAT-{{ material.id }}</small>
+              </td>
+              <td class="text-secondary">{{ material.description|default:"—" }}</td>
+              <td class="text-white fw-semibold">{{ material.quantity }}</td>
+              <td class="text-secondary">{{ material.unit }}</td>
+              <td style="text-align: center;">
+                {% if material.quantity <= 0 %}
+                  <span class="badge-modern badge-out-of-stock">Out of Stock</span>
+                {% elif material.quantity <= material.threshold %}
+                  <span class="badge-modern badge-low-stock">Low Stock</span>
+                {% else %}
+                  <span class="badge-modern badge-in-stock">In Stock</span>
                 {% endif %}
-              </span>
-            </div>
-
-            <!-- Last Updated -->
-            <div class="mt-2">
-              <small class="text-muted">
-                <strong>Last Updated:</strong> {{ material.last_updated|date:"M d, Y" }}
-              </small>
-            </div>
-          </div>
-        </div>
+              </td>
+              <td>
+                <button type="button" class="btn btn-sm btn-modern-outline me-1 edit-material-btn"
+                  data-id="{{ material.id }}" data-name="{{ material.name }}" 
+                  data-description="{{ material.description }}" data-quantity="{{ material.quantity }}"
+                  data-unit="{{ material.unit }}" data-threshold="{{ material.threshold }}"
+                  data-max_quantity="{{ material.max_quantity }}"
+                  data-bs-toggle="modal" data-bs-target="#addMaterialModal">
+                  Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                  data-material-name="{{ material.name }}" data-material-id="{{ material.id }}" 
+                  data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                  Delete
+                </button>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">No materials found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      {% empty %}
-      <div class="col-12 text-center py-5">
-        <div class="card p-5">
-          <h4 class="text-muted">No materials in inventory</h4>
-          <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addMaterialModal">
-            Add First Material
-          </button>
-        </div>
-      </div>
-      {% endfor %}
     </div>
   </div>
 
-  <!-- ADD MATERIAL MODAL -->
-  <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-labelledby="addMaterialModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
+  <!-- ADD/EDIT MATERIAL MODAL -->
+  <div class="modal fade" id="addMaterialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addMaterialModalLabel">Add New Material</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title" id="modal-title">Add New Material</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <form id="addMaterialForm" method="post">
+        <form id="materialForm" method="post">
           {% csrf_token %}
+          <input type="hidden" name="material_id" id="form-material-id">
           <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Material Name</label>
-              <input type="text" class="form-control" name="name" required>
-            </div>
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label">Quantity</label>
-                <input type="number" class="form-control" name="quantity" step="0.01" required>
+                <label class="form-label">Material Name *</label>
+                <input type="text" name="name" id="edit-name" class="form-control" required>
               </div>
               <div class="col-md-6 mb-3">
-                <label class="form-label">Unit</label>
-                <select class="form-select" name="unit" required>
+                <label class="form-label">Unit *</label>
+                <select name="unit" id="edit-unit" class="form-select" required>
                   <option value="kg">Kilograms (kg)</option>
-                  <option value="liters">Liters</option>
-                  <option value="tons">Tons</option>
-                  <option value="pieces">Pieces</option>
-                  <option value="barrels">Barrels</option>
-                  <option value="drums">Drums</option>
+                  <option value="liters">Liters (L)</option>
+                  <option value="pieces">Pieces (pcs)</option>
+                  <option value="boxes">Boxes</option>
                 </select>
               </div>
             </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea name="description" id="edit-description" class="form-control" rows="2"></textarea>
+            </div>
             <div class="row">
               <div class="col-md-6 mb-3">
-                <label class="form-label">Max Quantity</label>
-                <input type="number" class="form-control" name="max_quantity" step="0.01" required>
+                <label class="form-label">Current Quantity *</label>
+                <input type="number" name="quantity" id="edit-quantity" class="form-control" step="0.01" min="0" required>
               </div>
               <div class="col-md-6 mb-3">
-                <label class="form-label">Threshold Quantity</label>
-                <input type="number" class="form-control" name="threshold" step="0.01" required>
-                <small class="text-muted">Low stock alert level</small>
+                <label class="form-label">Threshold (Low Stock)</label>
+                <input type="number" name="threshold" id="edit-threshold" class="form-control" step="0.01" min="0">
               </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Max Quantity</label>
+              <input type="number" name="max_quantity" id="edit-max_quantity" class="form-control" step="0.01" min="0">
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Add Material</button>
+            <button type="submit" class="btn btn-primary" id="modal-submit-btn">Save Material</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- EDIT MATERIAL MODAL -->
-  <div class="modal fade" id="editMaterialModal" tabindex="-1" aria-labelledby="editMaterialModalLabel"
-    aria-hidden="true">
+  <!-- DELETE CONFIRMATION MODAL -->
+    <!-- DELETE CONFIRMATION MODAL -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editMaterialModalLabel">Edit Material</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title text-danger">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <form id="editMaterialForm" method="post">
+        <form method="post">
           {% csrf_token %}
-          <input type="hidden" name="material_id" id="edit-material-id">
-          <input type="hidden" name="edit_material" value="1">
+          <input type="hidden" name="material_id" id="delete-material-id">
+          <input type="hidden" name="delete_material" value="1"> <!-- ADD THIS LINE -->
           <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label">Material Name</label>
-              <input type="text" class="form-control" id="edit-name" name="name" required>
-            </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Quantity</label>
-                <input type="number" class="form-control" id="edit-quantity" name="quantity" step="0.01" required>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Unit</label>
-                <select class="form-select" id="edit-unit" name="unit" required>
-                  <option value="kg">Kilograms (kg)</option>
-                  <option value="liters">Liters</option>
-                  <option value="tons">Tons</option>
-                  <option value="pieces">Pieces</option>
-                  <option value="barrels">Barrels</option>
-                  <option value="drums">Drums</option>
-                </select>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Max Quantity</label>
-                <input type="number" class="form-control" id="edit-max_quantity" name="max_quantity" step="0.01"
-                  required>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Threshold Quantity</label>
-                <input type="number" class="form-control" id="edit-threshold" name="threshold" step="0.01" required>
-                <small class="text-muted">Low stock alert level</small>
-              </div>
-            </div>
+            Are you sure you want to delete <strong id="delete-material-name" class="text-white">this material</strong>?<br>
+            <small class="text-muted">This action cannot be undone.</small>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Update Material</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- DELETE MATERIAL MODAL -->
-  <div class="modal fade" id="deleteMaterialModal" tabindex="-1" aria-labelledby="deleteMaterialModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteMaterialModalLabel">Confirm Deletion</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Are you sure you want to delete <strong id="delete-material-name">this material</strong>?<br>
-          This action cannot be undone.
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <form id="deleteMaterialForm" method="post" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="material_id" id="delete-material-id">
-            <input type="hidden" name="delete_material" value="1">
             <button type="submit" class="btn btn-danger">Delete Material</button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+  
   <!-- Inventory Dashboard JavaScript -->
-  <script src="{% static 'js/inventory-dashboard.js' %}"></script>
-</body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // === EDIT LOGIC ===
+      const editButtons = document.querySelectorAll('.edit-material-btn');
+      const modalTitle = document.getElementById('modal-title');
+      const submitBtn = document.getElementById('modal-submit-btn');
+      
+      // Form fields
+      const f_id = document.getElementById('form-material-id');
+      const f_name = document.getElementById('edit-name');
+      const f_desc = document.getElementById('edit-description');
+      const f_qty = document.getElementById('edit-quantity');
+      const f_unit = document.getElementById('edit-unit');
+      const f_thresh = document.getElementById('edit-threshold');
+      const f_max = document.getElementById('edit-max_quantity');
 
+      editButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+          const isEdit = this.getAttribute('data-id');
+          
+          if (isEdit) {
+            modalTitle.textContent = 'Edit Material';
+            submitBtn.textContent = 'Update Material';
+            f_id.value = isEdit;
+            f_name.value = this.getAttribute('data-name');
+            f_desc.value = this.getAttribute('data-description') || '';
+            f_qty.value = this.getAttribute('data-quantity');
+            f_unit.value = this.getAttribute('data-unit');
+            f_thresh.value = this.getAttribute('data-threshold');
+            f_max.value = this.getAttribute('data-max_quantity');
+          } else {
+            modalTitle.textContent = 'Add New Material';
+            submitBtn.textContent = 'Save Material';
+            document.getElementById('materialForm').reset();
+            f_id.value = '';
+          }
+        });
+      });
+
+      // Reset form when Add Material button is clicked
+      const addBtn = document.querySelector('[data-bs-target="#addMaterialModal"]:not(.edit-material-btn)');
+      if(addBtn) {
+        addBtn.addEventListener('click', function() {
+            modalTitle.textContent = 'Add New Material';
+            submitBtn.textContent = 'Save Material';
+            document.getElementById('materialForm').reset();
+            f_id.value = '';
+        });
+      }
+
+      // === DELETE LOGIC ===
+      const deleteButtons = document.querySelectorAll('.delete-btn');
+      const deleteIdInput = document.getElementById('delete-material-id');
+      const deleteNameDisplay = document.getElementById('delete-material-name');
+
+      deleteButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+          deleteIdInput.value = this.getAttribute('data-material-id');
+          deleteNameDisplay.textContent = this.getAttribute('data-material-name');
+        });
+      });
+    });
+  </script>
+</body>
 </html>

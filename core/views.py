@@ -5,7 +5,13 @@ from .forms import ClientForm, OrderForm
 from  django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from django.db.models import Sum
+from django.db.models import Sum, F, Q 
+from django.db.models import F
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Material, ActivityLog
 from .models import Client, Order, Material, Invoice
 from django.urls import reverse
 from django.contrib.auth import authenticate, login
@@ -428,48 +434,63 @@ def add_order_for_client(request, client_id):
     })
 from django.shortcuts import render
 
+from django.db.models import F
+from decimal import Decimal, InvalidOperation
+from django.db.models import F
+from decimal import Decimal, InvalidOperation
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Material, ActivityLog
+
 @login_required
 def inventory_dashboard(request):
     if request.method == 'POST':
-        # --- DELETE ---
+        
+        # 1️⃣ CATCH DELETE FIRST
         if 'delete_material' in request.POST:
             material_id = request.POST.get('material_id')
             try:
-                Material.objects.filter(id=material_id).delete()
+                material = Material.objects.get(id=material_id)
+                material_name = material.name
+                material.delete()
                 
-                #Activity
                 ActivityLog.objects.create(
-                    activity_type = 'material_deleted',
-                    description = f'Material deleted : {material.name}',
-                    user = request.user,
-                    material_id = material.id
-                    
+                    activity_type='material_deleted',
+                    description=f'Material deleted: {material_name}',
+                    user=request.user,
+                    material_id=material_id
                 )
-                
                 messages.success(request, "Material deleted successfully.")
+            except Material.DoesNotExist:
+                messages.error(request, "Material not found.")
             except Exception as e:
-                messages.error(request, "Failed to delete material.")
+                messages.error(request, f"Failed to delete material: {str(e)}")
+            
+            return redirect('inventory_dashboard')
 
-        # --- EDIT ---
-        elif 'edit_material' in request.POST:
-            material_id = request.POST.get('material_id')
+        # 2️ HANDLE EDIT AND ADD
+        # We check if material_id exists. If yes = Edit. If no = Add.
+        material_id = request.POST.get('material_id')
+
+        if material_id:
+            # --- EDIT EXISTING MATERIAL ---
             try:
                 material = Material.objects.get(id=material_id)
                 material.name = request.POST['name'].strip()
+                material.description = request.POST.get('description', '').strip() # ✅ Saves description
                 material.quantity = Decimal(request.POST['quantity'])
                 material.unit = request.POST['unit']
                 material.max_quantity = Decimal(request.POST['max_quantity'])
                 material.threshold = Decimal(request.POST['threshold'])
                 material.save()
                 
-                #ACTIvity
                 ActivityLog.objects.create(
-                    activity_type = 'material_updated',
-                    description = f'Material Updated : {material.name}',
-                    user = request.user,
-                    material_id = material.id
+                    activity_type='material_updated',
+                    description=f'Material updated: {material.name}',
+                    user=request.user,
+                    material_id=material.id
                 )
-                
                 messages.success(request, "Material updated successfully.")
             except Material.DoesNotExist:
                 messages.error(request, "Material not found.")
@@ -478,11 +499,12 @@ def inventory_dashboard(request):
             except Exception as e:
                 messages.error(request, f"Error updating material: {str(e)}")
 
-        # --- ADD (only if NOT edit/delete) ---
-        elif 'name' in request.POST and 'quantity' in request.POST:
+        else:
+            # --- ADD NEW MATERIAL ---
             try:
                 material = Material(
                     name=request.POST['name'].strip(),
+                    description=request.POST.get('description', '').strip(), # ✅ Saves description
                     quantity=Decimal(request.POST['quantity']),
                     unit=request.POST['unit'],
                     max_quantity=Decimal(request.POST['max_quantity']),
@@ -490,14 +512,12 @@ def inventory_dashboard(request):
                 )
                 material.save()
                 
-                #Activity
                 ActivityLog.objects.create(
-                    activity_type = 'material_record',
-                    description = f'New Material added : {material.name}',
-                    user = request.user,
-                    material_id = material.id
+                    activity_type='material_created', 
+                    description=f'New material added: {material.name}',
+                    user=request.user,
+                    material_id=material.id
                 )
-                
                 messages.success(request, f"Material '{material.name}' added successfully.")
             except (InvalidOperation, ValueError):
                 messages.error(request, "Invalid number format in quantity fields.")
@@ -506,12 +526,10 @@ def inventory_dashboard(request):
 
         return redirect('inventory_dashboard')
     
-    # ... GET logic ...
-
-        # === HANDLE GET: FILTERING & SEARCH ===
+    # === 3️ HANDLE GET: FILTERING & SEARCH ===
     materials = Material.objects.all()
     search_query = request.GET.get('search')
-    status_filter = request.GET.get('status')
+    status_filter = request.GET.get('stock_status') 
 
     # Apply search
     if search_query:
@@ -525,24 +543,21 @@ def inventory_dashboard(request):
     elif status_filter == 'in_stock':
         materials = materials.filter(quantity__gt=0)
 
-    # Compute stats based on **filtered** materials (optional)
-    # Or keep stats for ALL materials — your choice
+    # Compute stats based on ALL materials
     all_materials = Material.objects.all()
     total_materials = all_materials.count()
     out_of_stock = all_materials.filter(quantity=0).count()
-    # In Stock = everything with quantity > 0
     in_stock = all_materials.filter(quantity__gt=0).count()
-    # Low Stock = subset of in_stock
     low_stock = all_materials.filter(quantity__gt=0, quantity__lt=F('threshold')).count()
 
-    # Add computed fields for each material (for cards)
+    # Add computed fields for each material (for progress bars/cards)
     for mat in materials:
         q = mat.quantity
         t = mat.threshold
         if q <= 0:
             mat.status = 'danger'
         elif q <= t:
-            mat.status = 'danger'  # or 'warning' if you prefer
+            mat.status = 'warning' 
         elif q < t * Decimal('1.5'):
             mat.status = 'warning'
         else:
@@ -557,10 +572,12 @@ def inventory_dashboard(request):
         'materials': materials,
         'total_materials': total_materials,
         'in_stock': in_stock,
-        'low_stock': low_stock,
-        'out_of_stock': out_of_stock,
+        'low_stock_materials': low_stock,
+        'out_of_stock_materials': out_of_stock,
     }
+    
     return render(request, 'inventory.html', context)
+
 
 @login_required
 def finance_dashboard(request):
