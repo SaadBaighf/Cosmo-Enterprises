@@ -7,178 +7,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Finance | Cosmo Enterprises</title>
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="{% static 'css/finance-dashboard.css' %}" rel="stylesheet">
   
-  <!-- SVG Favicon (for modern browsers) -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <path d='M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z' fill='%230891b2'/>
-  <rect x='45' y='10' width='10' height='20' fill='%230891b2'/>
-  <circle cx='35' cy='60' r='4' fill='%23ffffff'/>
-  <circle cx='65' cy='50' r='3' fill='%23ffffff'/>
-  <circle cx='50' cy='70' r='3.5' fill='%23ffffff'/>
-  <line x1='35' y1='60' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-  <line x1='65' y1='50' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-</svg>" type="image/svg+xml" />
+  <!-- Modern Dark Theme CSS -->
+  <link href="{% static 'css/modern-theme.css' %}" rel="stylesheet">
+  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body {
+      background: linear-gradient(135deg, #1e1b4b 0%, #3D32A6 50%, #312e81 100%) !important;
+    }
+    
+    /* Finance Status Badges - Dark Mode Optimized */
+    .badge-paid {
+      background: rgba(74, 222, 128, 0.15) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(74, 222, 128, 0.3) !important;
+    }
+    .badge-partial {
+      background: rgba(251, 191, 36, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    .badge-pending {
+      background: rgba(248, 113, 113, 0.15) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    }
+
     /* Client Avatar Styling */
     .client-avatar {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      overflow: hidden;
+      background: var(--gradient-primary);
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.9rem;
       flex-shrink: 0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 2px solid rgba(99, 102, 241, 0.5);
     }
-
     .client-avatar img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       border-radius: 50%;
     }
-
-    .client-avatar span {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 0.875rem;
-      background-color: #0891b2;
-      /* fallback */
-    }
-
-    /* Search & Filter Styles */
-    .search-filter-section {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      margin-bottom: 1.5rem;
-    }
-
-    .filter-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.25rem 0.75rem;
-      background: #e0f2fe;
-      border-radius: 20px;
-      font-size: 0.875rem;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .filter-chip .remove-filter {
-      margin-left: 0.5rem;
-      cursor: pointer;
-      opacity: 0.7;
-    }
-
-    .filter-chip .remove-filter:hover {
-      opacity: 1;
-    }
-
-    /* Stats Cards */
-    .stat-card {
-      border-top-width: 4px !important;
-      border-top-style: solid !important;
-    }
-
-    .card-body{
-      font-weight: 800 !important;
-    }
-    .card-body h2{
-      font-weight: 800 !important;
-    }
-    .card-body .text-muted{
-      font-weight: 800 !important;
-    }
-    /* Status Badges */
-    .status-badge {
-      padding: 0.375rem 0.75rem;
-      border-radius: 50rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-
-    .status-paid {
-      background-color: #dcfce7;
-      color: #166534;
-    }
-
-    .status-partial {
-      background-color: #fef3c7;
-      color: #92400e;
-    }
-
-    .status-pending {
-      background-color: #fee2e2;
-      color: #991b1b;
-    }
-
-    
-    
   </style>
 </head>
 
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center" href="/">
-      <svg width="32" height="32" viewBox="0 0 100 100">
-        <path d="M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z" fill="#0891b2" />
-        <rect x="45" y="10" width="10" height="20" fill="#0891b2" />
-        <circle cx="35" cy="60" r="4" fill="#ffffff" />
-        <circle cx="65" cy="50" r="3" fill="#ffffff" />
-        <circle cx="50" cy="70" r="3.5" fill="#ffffff" />
-        <line x1="35" y1="60" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-        <line x1="65" y1="50" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-      </svg>
-      <span class="fw-bold">Cosmo Enterprises </span>
-    </a>
-    <div class="navbar-nav ms-auto">
-      <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
-      <a class="nav-link {% if request.path == '/client/' %}active{% endif %}" href="/client/">Clients</a>
-      <a class="nav-link {% if request.path == '/order/' %}active{% endif %}" href="/order/">Orders</a>
-      <a class="nav-link {% if request.path == '/inventory/' %}active{% endif %}" href="/inventory/">Inventory</a>
-      <a class="nav-link {% if request.path == '/batch/' %}active{% endif %}" href="/batch/">Batches</a>
-      <a class="nav-link {% if request.path == '/finance/' %}active{% endif %}" href="/finance/">Finance</a>
-      <a class="nav-link" href="{% url 'logout' %}" title="Logout">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-    </svg>
-</a>
-    </div>
-  </div>
-</nav>
-
-  <!-- Header Section -->
-  <div class="header-section">
+  <!-- Lumen Style Navbar -->
+  <nav class="navbar navbar-expand-lg lumen-navbar sticky-top">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 class="display-5" style="font-weight: 800; font-size: 40px;">Finance Dashboard</h1>
-          <p class="text-muted mb-0">Track client invoices and payments</p>
-        </div>
+      <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
+        <span class="lumen-brand">Cosmo <span class="lumen-brand-sub">/ Enterprises</span></span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#lumenNav">
+        <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-center" id="lumenNav">
+        <ul class="navbar-nav lumen-nav">
+          <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="/client/">Clients</a></li>
+          <li class="nav-item"><a class="nav-link" href="/order/">Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="/batch/">Batches</a></li>
+          <li class="nav-item"><a class="nav-link" href="/inventory/">Inventory</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/finance/">Finance</a></li>
+        </ul>
+      </div>
+      <div class="d-none d-lg-flex align-items-center gap-4 ms-auto">
+        <a href="{% url 'logout' %}" class="lumen-text-link">Logout</a>
+        <a href="/client/" class="lumen-btn">
+          Clients
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sub-page Header -->
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h2 class="fw-bold mb-1 text-white">Finance Dashboard</h2>
+        <p class="text-muted mb-0">Track client invoices and payments</p>
       </div>
     </div>
   </div>
 
-  <!-- Success/Error Messages -->
+  <!-- Messages -->
   {% if messages %}
-  <div class="container mt-3">
+  <div class="container">
     {% for message in messages %}
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
       {{ message }}
@@ -188,57 +115,30 @@
   </div>
   {% endif %}
 
-  <!-- Stats Cards -->
-  <div class="container mt-4 ">
-    <div class="row g-3 mb-4">
+  <!-- Stats Summary -->
+  <div class="container mb-4">
+    <div class="row g-3">
       <div class="col-md-4">
-        <div class="card stat-card border-top border-4 border-primary">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ total_invoices }}</h2>
-            <small class="text-muted">TOTAL INVOICES</small>
-          </div>
-        </div>
+        <div class="stat-card"><h3>{{ total_invoices }}</h3><small>Total Invoices</small></div>
       </div>
       <div class="col-md-4">
-        <div class="card stat-card border-top border-4 border-danger">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ unpaid_invoices }}</h2>
-            <small class="text-muted">UNPAID INVOICES</small>
-          </div>
-        </div>
+        <div class="stat-card"><h3 class="text-danger">{{ unpaid_invoices }}</h3><small>Unpaid Invoices</small></div>
       </div>
       <div class="col-md-4">
-        <div class="card stat-card border-top border-4 border-success">
-          <div class="card-body text-center">
-            <h2 class="mb-0">{{ paid_invoices }}</h2>
-            <small class="text-muted">PAID INVOICES</small>
-          </div>
-        </div>
+        <div class="stat-card"><h3 class="text-success">{{ paid_invoices }}</h3><small>Paid Invoices</small></div>
       </div>
     </div>
   </div>
 
-  <!-- Search & Filter Section -->
-  <div class="container">
-    <div class="search-filter-section">
-      <div class="row">
-        <!-- Search Input -->
-        <div class="col-md-8 mb-3 mb-md-0">
-          <div class="input-group">
-            <!-- <span class="input-group-text">
-              <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path
-                  d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-              </svg> -->
-            </span> 
-            <input type="text" class="form-control" id="searchInput"
-              placeholder="Search by client name, client ID, or order ID..." value="{{ request.GET.q }}">
-          </div>
+  <!-- Filters & Search -->
+  <div class="container mb-4">
+    <div class="p-3 rounded-3" style="background: var(--bg-surface); border: 1px solid var(--border-color);">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-8">
+          <input type="text" id="searchInput" class="form-control" placeholder="Search by client name, ID, or order ID..." value="{{ request.GET.q }}">
         </div>
-
-        <!-- Filter Dropdown -->
         <div class="col-md-4">
-          <select class="form-select" id="statusFilter" onchange="applyFilter()">
+          <select id="statusFilter" class="form-select" onchange="applyFilter()">
             <option value="">All Statuses</option>
             <option value="paid" {% if request.GET.status == "paid" %}selected{% endif %}>Paid</option>
             <option value="partial" {% if request.GET.status == "partial" %}selected{% endif %}>Partial</option>
@@ -246,144 +146,103 @@
           </select>
         </div>
       </div>
-
-      <!-- Active Filters -->
-      <div class="mt-3" id="activeFilters">
-        {% if request.GET.q %}
-        <div class="filter-chip">
-          Search: "{{ request.GET.q }}"
-          <span class="remove-filter" onclick="removeSearchFilter()">×</span>
-        </div>
-        {% endif %}
-
-        {% if request.GET.status %}
-        <div class="filter-chip">
-          Status:
-          {% if request.GET.status == "paid" %}Paid
-          {% elif request.GET.status == "partial" %}Partial
-          {% elif request.GET.status == "pending" %}Pending
-          {% endif %}
-          <span class="remove-filter" onclick="removeStatusFilter()">×</span>
-        </div>
-        {% endif %}
-
-        <!-- Clear All Button -->
-        {% if request.GET.q or request.GET.status %}
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllFilters()">
-          Clear All Filters
-        </button>
-        {% endif %}
-      </div>
     </div>
   </div>
 
-
-  <!-- Invoice Table -->
+  <!-- Invoices Table -->
   <div class="container mb-5">
-    <div class="card inventory-table-card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Invoices</h5>
-      </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>Client</th>
-                <th>Order ID</th>
-                <th>Total Amount</th>
-                <th>Paid</th>
-                <th>Remaining</th>
-                <th>Status</th>
-                <th>Actions</th>
-                <th>Invoice</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for order in client_invoices %}
-              <tr>
-                <!-- Client Column with Avatar -->
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="client-avatar me-3">
-                      {% if order.client.avatar %}
-                      <img src="{{ order.client.avatar.url }}" alt="{{ order.client.name }}" class="avatar-img"
-                        width="36" height="36">
-                      {% else %}
-                      <span style="background-color: {{ order.client.get_avatar_color }};">
-                        {{ order.client.get_initials }}
-                      </span>
-                      {% endif %}
-                    </div>
-                    <div>
-                      <div><strong>{{ order.client.name }}</strong></div>
-                      <small class="text-muted">CL-{{ order.client.id }}</small>
-                    </div>
-                  </div>
-                </td>
-
-                <!-- Other columns -->
-                <td><span class="badge bg-info text-dark">{{ order.order_id }}</span></td>
-                <td>${{ order.payment }}</td>
-                <td>${{ order.total_paid }}</td>
-                <td>
-                  {% if order.db_remaining > 0 %}
-                  <span class="text-danger">${{ order.db_remaining }}</span>
-                  {% else %}
-                  <span class="text-success">$0</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if order.db_remaining <= 0 %} <span class="badge bg-success">Paid</span>
-                    {% elif order.total_paid > 0 %}
-                    <span class="badge bg-warning text-dark">Partial</span>
+    <div class="content-card">
+      <div class="table-responsive">
+        <table class="table modern-table mb-0">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Order ID</th>
+              <th>Total Amount</th>
+              <th>Paid</th>
+              <th>Remaining</th>
+              <th style="text-align: center;">Status</th>
+              <th>Actions</th>
+              <th>Invoice</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in client_invoices %}
+            <tr>
+              <!-- Client Column with Avatar -->
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="client-avatar me-3">
+                    {% if order.client.avatar %}
+                      <img src="{{ order.client.avatar.url }}" alt="{{ order.client.name }}" />
                     {% else %}
-                    <span class="badge bg-danger">Pending</span>
+                      {{ order.client.get_initials }}
                     {% endif %}
-                </td>
-                <td>
-                  {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
-                    <!--  UNLOCKED: Order is ready or shipped, allow payment -->
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                      data-bs-target="#paymentModal" data-order-id="{{ order.id }}"
-                      data-order-ref="ORD-{{ order.order_id }}" data-current-paid="{{ order.total_paid|floatformat:2 }}"
-                      data-total="{{ order.payment }}">
-                       Record Payment
-                    </button>
-                  {% else %}
-                    <!--  LOCKED: Order is still in the factory -->
-                    <span class="badge bg-secondary" title="Payment can be collected once production is complete">
-                       In Production
-                    </span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if order.invoices.exists %}
-                  <a href="{% url 'view_invoice' order.invoices.first.id %}" class="btn btn-sm btn-outline-secondary"
-                    target="_blank">
+                  </div>
+                  <div>
+                    <strong class="text-white">{{ order.client.name }}</strong><br>
+                    <small class="text-muted">CL-{{ order.client.id }}</small>
+                  </div>
+                </div>
+              </td>
+
+              <td><span class="badge-modern" style="background: rgba(96, 165, 250, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);">{{ order.order_id }}</span></td>
+              <td class="text-white fw-semibold">${{ order.payment }}</td>
+              <td class="text-success fw-semibold">${{ order.total_paid }}</td>
+              <td>
+                {% if order.db_remaining > 0 %}
+                  <span class="text-danger fw-semibold">${{ order.db_remaining }}</span>
+                {% else %}
+                  <span class="text-success fw-semibold">$0</span>
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                {% if order.db_remaining <= 0 %}
+                  <span class="badge-modern badge-paid">Paid</span>
+                {% elif order.total_paid > 0 %}
+                  <span class="badge-modern badge-partial">Partial</span>
+                {% else %}
+                  <span class="badge-modern badge-pending">Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                <!--  PROFESSIONAL: Workflow-Triggered Billing -->
+                {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
+                  <button type="button" class="btn btn-sm btn-modern-outline" data-bs-toggle="modal"
+                    data-bs-target="#paymentModal" data-order-id="{{ order.id }}"
+                    data-order-ref="ORD-{{ order.order_id }}" data-current-paid="{{ order.total_paid|floatformat:2 }}"
+                    data-total="{{ order.payment }}">
+                     Record Payment
+                  </button>
+                {% else %}
+                  <span class="badge bg-secondary" title="Payment can be collected once production is complete">
+                     In Production
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                {% if order.invoices.exists %}
+                  <a href="{% url 'view_invoice' order.invoices.first.id %}" class="btn btn-sm btn-modern-outline" target="_blank">
                     View Invoice
                   </a>
-                  {% else %}
-                  —
-                  {% endif %}
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="9" class="text-center py-4">
-                  <h4 class="text-muted">No invoices yet.</h4>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table> 
-        </div>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">No invoices yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <!-- Payment Modal -->
-  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="post">
@@ -392,19 +251,18 @@
           <input type="hidden" name="order_id" id="payment-order-id">
 
           <div class="modal-header">
-            <h5 class="modal-title" id="paymentModalLabel">Edit Payment for <span id="payment-order-ref"></span></h5>
+            <h5 class="modal-title">Record Payment for <span id="payment-order-ref" class="text-primary"></span></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">Total Invoice Amount</label>
-              <input type="text" class="form-control" id="payment-total" readonly>
+              <input type="text" class="form-control" id="payment-total" readonly style="background: rgba(99, 102, 241, 0.1); font-weight: bold;">
             </div>
             <div class="mb-3">
-              <label class="form-label">Total Paid Amount ($)</label>
-              <input type="number" name="paid_amount" id="payment-paid-amount" class="form-control" step="0.01" min="0"
-                required>
-              <div class="form-text">Enter the correct total amount paid for this order.</div>
+              <label class="form-label">Update Total Paid Amount ($)</label>
+              <input type="number" name="paid_amount" id="payment-paid-amount" class="form-control" step="0.01" min="0" required>
+              <div class="form-text text-muted">Enter the new total amount paid for this order.</div>
             </div>
           </div>
           <div class="modal-footer">
@@ -433,7 +291,6 @@
       const searchValue = document.getElementById('searchInput').value;
       const statusValue = document.getElementById('statusFilter').value;
 
-      // Build URL with query parameters
       const url = new URL(window.location);
       url.searchParams.set('q', searchValue);
       if (statusValue) {
@@ -441,30 +298,6 @@
       } else {
         url.searchParams.delete('status');
       }
-
-      // Redirect to new URL
-      window.location.href = url.toString();
-    }
-
-    // Remove search filter
-    function removeSearchFilter() {
-      const url = new URL(window.location);
-      url.searchParams.delete('q');
-      window.location.href = url.toString();
-    }
-
-    // Remove status filter
-    function removeStatusFilter() {
-      const url = new URL(window.location);
-      url.searchParams.delete('status');
-      window.location.href = url.toString();
-    }
-
-    // Clear all filters
-    function clearAllFilters() {
-      const url = new URL(window.location);
-      url.searchParams.delete('q');
-      url.searchParams.delete('status');
       window.location.href = url.toString();
     }
 
@@ -472,10 +305,9 @@
     document.addEventListener('DOMContentLoaded', function () {
       const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
 
-      // Record Payment Buttons
       const recordButtons = document.querySelectorAll('[data-bs-target="#paymentModal"]');
       recordButtons.forEach(btn => {
-        btn.addEventListener('click', function (event) {
+        btn.addEventListener('click', function () {
           const orderId = this.getAttribute('data-order-id');
           const orderRef = this.getAttribute('data-order-ref');
           const currentPaid = this.getAttribute('data-current-paid');
@@ -483,23 +315,14 @@
 
           document.getElementById('payment-order-id').value = orderId;
           document.getElementById('payment-order-ref').textContent = orderRef;
-          document.getElementById('payment-total').value = total;
-          document.getElementById('payment-current-paid').value = parseFloat(currentPaid).toFixed(2);
+          document.getElementById('payment-total').value = '$' + parseFloat(total).toFixed(2);
+          document.getElementById('payment-paid-amount').value = parseFloat(currentPaid).toFixed(2);
 
           paymentModal.show();
         });
       });
-
-      // Reset form when modal closes
-      if (paymentModal) {
-        paymentModal.addEventListener('hidden.bs.modal', function () {
-          const form = document.querySelector('#paymentModal form');
-          if (form) form.reset();
-        });
-      }
     });
   </script>
 
 </body>
-
 </html>

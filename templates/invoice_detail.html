@@ -6,127 +6,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Receipt</title>
+    <title>Invoice Receipt | Cosmo Enterprises</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <path d='M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z' fill='%230891b2'/>
-  <rect x='45' y='10' width='10' height='20' fill='%230891b2'/>
-  <circle cx='35' cy='60' r='4' fill='%23ffffff'/>
-  <circle cx='65' cy='50' r='3' fill='%23ffffff'/>
-  <circle cx='50' cy='70' r='3.5' fill='%23ffffff'/>
-  <line x1='35' y1='60' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-  <line x1='65' y1='50' x2='50' y2='70' stroke='%23ffffff' stroke-width='1.5'/>
-</svg>" type="image/svg+xml" />
+    <link href="{% static 'css/modern-theme.css' %}" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary: #0891b2;
-            --dark: #0f172a;
-            --light: #f8fafc;
-        }
-
         body {
-            background-color: #f9fafb;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #3D32A6 50%, #312e81 100%) !important;
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
         }
 
         .invoice-container {
-            background: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            border-radius: 12px;
+            background: var(--bg-surface);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
             overflow: hidden;
+            border: 1px solid var(--border-color);
         }
 
         .invoice-header {
-            background: linear-gradient(135deg, var(--primary), #0e7490);
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 50%, #8b5cf6 100%);
             color: white;
             padding: 2.5rem 2rem;
             position: relative;
         }
 
+        .invoice-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.3), transparent 50%);
+            opacity: 0.5;
+        }
+
         .invoice-logo {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 10px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .invoice-logo svg {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
         }
 
         .invoice-meta {
             text-align: right;
         }
 
+        .invoice-meta h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
         .invoice-section {
-            padding: 1.8rem 2rem;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .invoice-section:last-child {
             border-bottom: none;
         }
 
-        .invoice-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+        .invoice-section h4 {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .invoice-item h4 {
-            color: var(--dark);
+        .invoice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .invoice-item p {
+            color: var(--text-secondary);
             margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .invoice-item strong {
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .invoice-item .text-white {
+            color: var(--text-primary) !important;
+            font-weight: 600;
+        }
+
+        .payment-summary-box {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .payment-summary-box .row > div {
+            padding: 0.75rem;
+        }
+
+        .payment-summary-box strong {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .payment-summary-box .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .due-amount-section {
+            background: linear-gradient(135deg, rgba(248, 113, 113, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: right;
+        }
+
+        .due-amount-section .label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .due-amount-section .amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #f87171;
+            margin-top: 0.25rem;
+        }
+
+        .bank-details {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid #6366f1;
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .bank-details p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .bank-details strong {
+            color: var(--text-muted);
             font-weight: 600;
         }
 
         .invoice-footer {
-            padding: 1.5rem 2rem;
-            background: var(--light);
+            padding: 2rem;
+            background: rgba(15, 23, 42, 0.5);
             text-align: center;
-            color: #64748b;
+            color: var(--text-muted);
             font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .invoice-footer p {
+            margin-bottom: 0.5rem;
         }
 
         .download-btn {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: var(--primary);
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
             color: white;
             border: none;
-            box-shadow: 0 4px 10px rgba(8, 145, 182, 0.3);
-            transition: all 0.2s ease;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
             position: fixed;
             bottom: 2rem;
             right: 2rem;
             z-index: 1000;
+            text-decoration: none;
         }
 
         .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(8, 145, 182, 0.4);
-            background: #0e7490;
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+            color: white;
         }
 
         .download-btn svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .bank-details {
-            background: #f0f9ff;
-            border-left: 4px solid var(--primary);
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 1rem;
+            width: 28px;
+            height: 28px;
         }
 
         @media print {
@@ -135,14 +232,44 @@
             }
 
             body {
-                background: white;
+                background: white !important;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                border: none;
+            }
+
+            .invoice-header {
+                background: #4338ca !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .invoice-header {
+                padding: 1.5rem;
+            }
+
+            .invoice-meta {
+                text-align: left;
+                margin-top: 1rem;
+            }
+
+            .invoice-section {
+                padding: 1.5rem;
+            }
+
+            .due-amount-section {
+                text-align: left;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Download Button (logo-only) -->
+    <!-- Download Button -->
     <a href="{% url 'download_invoice_pdf' invoice.id %}" class="download-btn" title="Download PDF">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -150,30 +277,18 @@
         </svg>
     </a>
 
-    <div class="container py-4">
+    <div class="container py-5">
         <div class="invoice-container">
             <!-- Header -->
             <div class="invoice-header">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="invoice-logo">
-                            <svg width="32" height="32" viewBox="0 0 100 100" style="fill: #0891b2; stroke: #ffffff;">
-                                <path d="M20,80 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,80 L75,90 L25,90 Z" />
-                                <rect x="45" y="10" width="10" height="20" />
-                                <circle cx="35" cy="60" r="4" fill="#ffffff" />
-                                <circle cx="65" cy="50" r="3" fill="#ffffff" />
-                                <circle cx="50" cy="70" r="3.5" fill="#ffffff" />
-                                <line x1="35" y1="60" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-                                <line x1="65" y1="50" x2="50" y2="70" stroke="#ffffff" stroke-width="1.5" />
-                            </svg>
-                        </div>
-                        <h2 class="h3 mb-1">Cosmo Enterprises</h2>
-                        <p class="mb-0 opacity-75">Chemical Solutions Provider</p>
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div> 
+                        <h2 class="h3 mb-1 fw-bold">Cosmo <br> Enterprises</h2>
                     </div>
                     <div class="invoice-meta">
-                        <h1 class="h2 mb-2">INVOICE</h1>
+                        <h1 class="mb-2">INVOICE</h1>
                         <p class="mb-1"><strong>#{{ invoice.id }}</strong></p>
-                        <p class="mb-0">{{ invoice.created_at|date:"d M Y" }}</p>
+                        <p class="mb-0 opacity-75">{{ invoice.created_at|date:"d M Y" }}</p>
                     </div>
                 </div>
             </div>
@@ -183,53 +298,58 @@
                 <div class="invoice-grid">
                     <div class="invoice-item">
                         <h4>Billed To</h4>
-                        <p class="mb-1"><strong>Client ID:</strong> CL-{{ order.client.id }}</p>
-                        <p class="mb-0"><strong>Client Name:</strong> {{ order.client.name }}</p>
+                        <p><strong>Client ID:</strong> <span class="text-white">CL-{{ order.client.id }}</span></p>
+                        <p><strong>Client Name:</strong> <span class="text-white">{{ order.client.name }}</span></p>
                     </div>
                     <div class="invoice-item">
                         <h4>Order Details</h4>
-                        <p class="mb-1"><strong>Order ID:</strong> ORD-{{ order.order_id }}</p>
-                        <p class="mb-1"><strong>Fabric Type:</strong> <span class="text-capitalize">{{ order.fabric_type}}</span></p>
-                        <p class="mb-1"><strong>Quantity:</strong> {{ order.quantity }} {{ order.unit|default:"units" }}</p>
-                        <p class="mb-1"><strong>Due Date:</strong> {{ order.due_date|date:"M d, Y" }}</p>
-                        <p class="mb-0"><strong>Total Amount:</strong> ${{ order.payment }}</p>
+                        <p><strong>Order ID:</strong> <span class="text-white">ORD-{{ order.order_id }}</span></p>
+                        <p><strong>Fabric Type:</strong> <span class="text-white text-capitalize">{{ order.fabric_type }}</span></p>
+                        <p><strong>Quantity:</strong> <span class="text-white">{{ order.quantity }} {{ order.unit|default:"units" }}</span></p>
+                        <p><strong>Due Date:</strong> <span class="text-white">{{ order.due_date|date:"M d, Y" }}</span></p>
+                        <p><strong>Total Amount:</strong> <span class="text-white">${{ order.payment }}</span></p>
                     </div>
                 </div>
             </div>
 
             <!-- Payment Summary -->
             <div class="invoice-section">
-                <h4 class="mb-3">Payment Summary</h4>
-                <div class="invoice-grid">
-                    <div class="invoice-item">
-                        <p><strong>Paid Amount:</strong> ${{ paid_amount }}</p>
-                    </div>
-                    <div class="invoice-item">
-                        <p><strong>Remaining Amount:</strong> ${{ remaining_amount }}</p>
+                <h4>Payment Summary</h4>
+                
+                <div class="payment-summary-box">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Paid Amount</strong>
+                            <div class="amount text-success">${{ paid_amount }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Remaining Amount</strong>
+                            <div class="amount text-warning">${{ remaining_amount }}</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- ✅ DUE AMOUNT = REMAINING -->
-                <div class="invoice-section text-end mt-3 pt-3 border-top">
-                    <div style="font-size: 1.25rem;">
-                        <span class="me-3">DUE AMOUNT:</span>
-                        <span class="text-danger fw-bold">${{ remaining_amount }}</span>
-                    </div>
+                <!-- Due Amount -->
+                <div class="due-amount-section">
+                    <div class="label">Due Amount</div>
+                    <div class="amount">${{ remaining_amount }}</div>
                 </div>
             </div>
 
-            <!-- ✅ Bank Details -->
-            <div class="invoice-section">
-                <h4 class="mb-2">Bank Details for Payment</h4>
-                <div class="bank-details">
-                    <p class="mb-1"><strong>Bank Name:</strong> {{ bank_name }}</p>
-                    <p class="mb-0"><strong>IBAN:</strong> {{ iban }}</p>
-                </div>
+            <!-- Bank Details --> 
+            <div class="invoice-section"> 
+                <h4>Bank Details for Payment</h4>
+                <div class="bank-details"> 
+                    <p><strong>Account Name:</strong> {{ bank_name }}</p>
+                    <p><strong>Bank IBAN:</strong> {{ iban }}</p> 
+                    <p><strong>Account No:</strong> {{ account_no }}</p> 
+                    <p class="mb-0"><strong>Branch:</strong> {{ branch }}</p> 
+                </div> 
             </div>
 
             <!-- Footer -->
             <div class="invoice-footer">
-                <p class="mb-1">Thank you for your business!</p>
+                <p class="mb-1 fw-semibold">Thank you for your business!</p>
                 <p class="mb-0">This is a computer-generated invoice. No signature required.</p>
             </div>
         </div>

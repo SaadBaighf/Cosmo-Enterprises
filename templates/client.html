@@ -273,6 +273,7 @@
         <form method="post">
           {% csrf_token %}
           <input type="hidden" name="client_id" id="delete-client-id">
+          <input type="hidden" name="delete_client" value="1">
           <div class="modal-body">
             Are you sure you want to delete <strong id="delete-client-name" class="text-white">this client</strong>?<br>
             <small class="text-muted">This action cannot be undone.</small>

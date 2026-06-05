@@ -447,7 +447,7 @@ from .models import Material, ActivityLog
 def inventory_dashboard(request):
     if request.method == 'POST':
         
-        # 1️⃣ CATCH DELETE FIRST
+        #  DELETE
         if 'delete_material' in request.POST:
             material_id = request.POST.get('material_id')
             try:
@@ -462,28 +462,36 @@ def inventory_dashboard(request):
                     material_id=material_id
                 )
                 messages.success(request, "Material deleted successfully.")
-            except Material.DoesNotExist:
-                messages.error(request, "Material not found.")
             except Exception as e:
-                messages.error(request, f"Failed to delete material: {str(e)}")
-            
+                messages.error(request, f"Failed to delete: {str(e)}")
             return redirect('inventory_dashboard')
 
-        # 2️ HANDLE EDIT AND ADD
-        # We check if material_id exists. If yes = Edit. If no = Add.
-        material_id = request.POST.get('material_id')
-
+        #  EDIT OR ADD - Check if material_id exists
+        material_id = request.POST.get('material_id', '').strip()
+        
         if material_id:
             # --- EDIT EXISTING MATERIAL ---
             try:
+                # Prepare update data
+                name = request.POST.get('name', '').strip()
+                quantity = Decimal(request.POST.get('quantity', 0))
+                unit = request.POST.get('unit', '')
+                max_quantity = Decimal(request.POST.get('max_quantity', 0))
+                threshold = Decimal(request.POST.get('threshold', 0))
+                description = request.POST.get('description', '').strip()
+                
+                # Use update() to avoid field conflicts
+                Material.objects.filter(id=material_id).update(
+                    name=name,
+                    quantity=quantity,
+                    unit=unit,
+                    max_quantity=max_quantity,
+                    threshold=threshold,
+                    description=description
+                )
+                
+                # Get the updated material for logging
                 material = Material.objects.get(id=material_id)
-                material.name = request.POST['name'].strip()
-                material.description = request.POST.get('description', '').strip() # ✅ Saves description
-                material.quantity = Decimal(request.POST['quantity'])
-                material.unit = request.POST['unit']
-                material.max_quantity = Decimal(request.POST['max_quantity'])
-                material.threshold = Decimal(request.POST['threshold'])
-                material.save()
                 
                 ActivityLog.objects.create(
                     activity_type='material_updated',
@@ -491,51 +499,50 @@ def inventory_dashboard(request):
                     user=request.user,
                     material_id=material.id
                 )
-                messages.success(request, "Material updated successfully.")
-            except Material.DoesNotExist:
-                messages.error(request, "Material not found.")
-            except (InvalidOperation, ValueError):
-                messages.error(request, "Invalid number format in quantity fields.")
+                messages.success(request, f" Successfully updated {material.name}!")
+                
             except Exception as e:
-                messages.error(request, f"Error updating material: {str(e)}")
-
+                messages.error(request, f"Failed to update: {str(e)}")
         else:
             # --- ADD NEW MATERIAL ---
             try:
                 material = Material(
-                    name=request.POST['name'].strip(),
-                    description=request.POST.get('description', '').strip(), # ✅ Saves description
-                    quantity=Decimal(request.POST['quantity']),
-                    unit=request.POST['unit'],
-                    max_quantity=Decimal(request.POST['max_quantity']),
-                    threshold=Decimal(request.POST['threshold'])
+                    name=request.POST.get('name', '').strip(),
+                    quantity=Decimal(request.POST.get('quantity')),
+                    unit=request.POST.get('unit', ''),
+                    max_quantity=Decimal(request.POST.get('max_quantity', 0)),
+                    threshold=Decimal(request.POST.get('threshold', 0))
                 )
+                
+                # Only add description if field exists
+                try:
+                    material.description = request.POST.get('description', '').strip()
+                except AttributeError:
+                    pass
+                
                 material.save()
                 
                 ActivityLog.objects.create(
-                    activity_type='material_created', 
+                    activity_type='material_created',
                     description=f'New material added: {material.name}',
                     user=request.user,
                     material_id=material.id
                 )
-                messages.success(request, f"Material '{material.name}' added successfully.")
-            except (InvalidOperation, ValueError):
-                messages.error(request, "Invalid number format in quantity fields.")
+                messages.success(request, f"✅ Material '{material.name}' added successfully!")
+                
             except Exception as e:
-                messages.error(request, f"Failed to add material: {str(e)}")
+                messages.error(request, f"Failed to add: {str(e)}")
 
         return redirect('inventory_dashboard')
     
-    # === 3️ HANDLE GET: FILTERING & SEARCH ===
+    # === GET REQUEST ===
     materials = Material.objects.all()
     search_query = request.GET.get('search')
-    status_filter = request.GET.get('stock_status') 
+    status_filter = request.GET.get('stock_status')
 
-    # Apply search
     if search_query:
         materials = materials.filter(name__icontains=search_query)
 
-    # Apply status filter
     if status_filter == 'out_of_stock':
         materials = materials.filter(quantity=0)
     elif status_filter == 'low_stock':
@@ -543,30 +550,11 @@ def inventory_dashboard(request):
     elif status_filter == 'in_stock':
         materials = materials.filter(quantity__gt=0)
 
-    # Compute stats based on ALL materials
     all_materials = Material.objects.all()
     total_materials = all_materials.count()
     out_of_stock = all_materials.filter(quantity=0).count()
     in_stock = all_materials.filter(quantity__gt=0).count()
     low_stock = all_materials.filter(quantity__gt=0, quantity__lt=F('threshold')).count()
-
-    # Add computed fields for each material (for progress bars/cards)
-    for mat in materials:
-        q = mat.quantity
-        t = mat.threshold
-        if q <= 0:
-            mat.status = 'danger'
-        elif q <= t:
-            mat.status = 'warning' 
-        elif q < t * Decimal('1.5'):
-            mat.status = 'warning'
-        else:
-            mat.status = 'fill'
-
-        max_q = max(mat.max_quantity, Decimal('1'))
-        mat.bar_width = min(100, int((q / max_q) * 100))
-        mat.bar_class = mat.status
-        mat.show_warning = q < t
 
     context = {
         'materials': materials,
@@ -577,7 +565,6 @@ def inventory_dashboard(request):
     }
     
     return render(request, 'inventory.html', context)
-
 
 @login_required
 def finance_dashboard(request):
@@ -765,46 +752,34 @@ def get_material_vendors(request, material_id):
         return JsonResponse({'error': 'Material not found'}, status=404)
 
 
-# views.py
 def view_invoice(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)
-    order = invoice.order  # ✅ Get related order
+    order = invoice.order  
 
-    # ✅ Calculate total paid and remaining
+    # Calculate total paid and remaining
     total_paid = order.invoices.aggregate(total=models.Sum('amount'))['total'] or 0
     remaining = order.payment - total_paid
     
-    bank_name , iban = get_bank_details(invoice_id)
+    # BANK DETAILS FOR COSMO ENTERPRISES
+    # 
+    bank_name = "Cosmo Enterprises Official Account"
+    iban = "PK36 SCBL 0000 0011 2345 6702"  #     IBAN
+    account_no = "1123456702"                #     Account No
+    branch = "Main Corporate Branch"         #     Branch
 
-    # ✅ Generate random bank + IBAN
-    # banks = [
-    #     "Global Trust Bank",
-    #     "Penta Financial Services",
-    #     "Horizon Capital Bank",
-    #     "Summit National Bank",
-    #     "Vertex Banking Group"
-    # ]
-    # ibans = [
-    #     "DE89370400440532013000",
-    #     "FR1420041010050500013M02606",
-    #     "GB29NWBK60161331926819",
-    #     "IT60X0542811101000000123456",
-    #     "ES9121000418450200051332"
-    # ]
-    # bank_name = random.choice(banks)
-    # iban = random.choice(ibans)
-
-    # ✅ PASS ALL REQUIRED VARIABLES TO TEMPLATE
     context = {
         'invoice': invoice,
-        'order': order,  # ✅ Needed for client/order info
-        'paid_amount': total_paid,  # ✅ For Payment Summary
-        'remaining_amount': remaining,  # ✅ For Remaining & Due Amount
-        'bank_name': bank_name,  # ✅ For Bank Details
-        'iban': iban,  # ✅ For Bank Details
+        'order': order,  
+        'paid_amount': total_paid,  
+        'remaining_amount': remaining,  
+        'bank_name': bank_name,  
+        'iban': iban,  
+        'account_no': account_no,
+        'branch': branch,
     }
 
     return render(request, 'invoice_detail.html', context)
+
 
 def download_invoice_pdf(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id)

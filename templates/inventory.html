@@ -36,6 +36,98 @@
       color: #f87171 !important;
       border: 1px solid rgba(248, 113, 113, 0.3) !important;
     }
+        /* Professional Alert Messages */
+    .alert {
+      border: none !important;
+      border-radius: 12px !important;
+      padding: 1rem 1.5rem !important;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      animation: slideInDown 0.4s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @keyframes slideInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Success Alert */
+    .alert-success {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%) !important;
+      color: #4ade80 !important;
+      border-left: 4px solid #4ade80 !important;
+    }
+    
+    /* Error Alert */
+    .alert-danger {
+      background: linear-gradient(135deg, rgba(248, 113, 113, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
+      color: #f87171 !important;
+      border-left: 4px solid #f87171 !important;
+    }
+    
+    /* Warning Alert */
+    .alert-warning {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%) !important;
+      color: #fbbf24 !important;
+      border-left: 4px solid #fbbf24 !important;
+    }
+    
+    /* Info Alert */
+    .alert-info {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%) !important;
+      color: #60a5fa !important;
+      border-left: 4px solid #60a5fa !important;
+    }
+    
+    /* Alert Icon */
+    .alert::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 12px 0 0 12px;
+    }
+    
+    .alert-success::before {
+      background: #4ade80;
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+    }
+    
+    .alert-danger::before {
+      background: #f87171;
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+    }
+    
+    .alert-warning::before {
+      background: #fbbf24;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+    
+    .alert-info::before {
+      background: #60a5fa;
+      box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+    }
+    
+    /* Close Button Styling */
+    .btn-close {
+      filter: brightness(0) invert(1);
+      opacity: 0.7;
+    }
+    
+    .btn-close:hover {
+      opacity: 1;
+    }
   </style>
 </head>
 
@@ -286,10 +378,10 @@
   <!-- Inventory Dashboard JavaScript -->
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // === EDIT LOGIC ===
-      const editButtons = document.querySelectorAll('.edit-material-btn');
       const modalTitle = document.getElementById('modal-title');
       const submitBtn = document.getElementById('modal-submit-btn');
+      const materialForm = document.getElementById('materialForm');
+      const modal = document.getElementById('addMaterialModal');
       
       // Form fields
       const f_id = document.getElementById('form-material-id');
@@ -300,39 +392,68 @@
       const f_thresh = document.getElementById('edit-threshold');
       const f_max = document.getElementById('edit-max_quantity');
 
+      // Helper function to reset form for new material
+      function resetFormForAdd() {
+        materialForm.reset();
+        f_id.value = '';
+        modalTitle.textContent = 'Add New Material';
+        submitBtn.textContent = 'Save Material';
+      }
+
+      // === EDIT LOGIC ===
+      const editButtons = document.querySelectorAll('.edit-material-btn');
       editButtons.forEach(btn => {
         btn.addEventListener('click', function () {
-          const isEdit = this.getAttribute('data-id');
+          const materialId = this.getAttribute('data-id');
           
-          if (isEdit) {
-            modalTitle.textContent = 'Edit Material';
-            submitBtn.textContent = 'Update Material';
-            f_id.value = isEdit;
+          if (materialId) {
+            // Set form for editing
+            f_id.value = materialId;
             f_name.value = this.getAttribute('data-name');
             f_desc.value = this.getAttribute('data-description') || '';
             f_qty.value = this.getAttribute('data-quantity');
             f_unit.value = this.getAttribute('data-unit');
             f_thresh.value = this.getAttribute('data-threshold');
             f_max.value = this.getAttribute('data-max_quantity');
-          } else {
-            modalTitle.textContent = 'Add New Material';
-            submitBtn.textContent = 'Save Material';
-            document.getElementById('materialForm').reset();
-            f_id.value = '';
+            
+            modalTitle.textContent = 'Edit Material';
+            submitBtn.textContent = 'Update Material';
           }
         });
       });
 
-      // Reset form when Add Material button is clicked
-      const addBtn = document.querySelector('[data-bs-target="#addMaterialModal"]:not(.edit-material-btn)');
-      if(addBtn) {
-        addBtn.addEventListener('click', function() {
-            modalTitle.textContent = 'Add New Material';
-            submitBtn.textContent = 'Save Material';
-            document.getElementById('materialForm').reset();
-            f_id.value = '';
-        });
+      // === ADD MATERIAL BUTTON (Header) ===
+      const addHeaderBtn = document.querySelector('.btn-primary[data-bs-target="#addMaterialModal"]:not(.edit-material-btn)');
+      if (addHeaderBtn) {
+        addHeaderBtn.addEventListener('click', resetFormForAdd);
       }
+
+      // === FORM SUBMISSION ===
+      materialForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const materialId = f_id.value;
+        const name = f_name.value.trim();
+        const quantity = f_qty.value;
+        
+        // Validation
+        if (!name) {
+          alert('❌ Material name is required.');
+          return;
+        }
+        if (!quantity || parseFloat(quantity) < 0) {
+          alert('❌ Valid quantity is required.');
+          return;
+        }
+        
+        // Submit the form
+        this.submit();
+      });
+
+      // === MODAL CLOSE HANDLER ===
+      modal.addEventListener('hidden.bs.modal', function () {
+        resetFormForAdd();
+      });
 
       // === DELETE LOGIC ===
       const deleteButtons = document.querySelectorAll('.delete-btn');
