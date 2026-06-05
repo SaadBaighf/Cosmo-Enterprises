@@ -10,6 +10,7 @@ from django.db.models import F
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from .models import Invoice, ActivityLog, Order 
 from django.contrib.auth.decorators import login_required
 from .models import Material, ActivityLog
 from .models import Client, Order, Material, Invoice
@@ -1051,3 +1052,223 @@ def advance_order_status(request, order_id):
             messages.error(request, "Cannot advance this order further.")
             
     return redirect('order_dashboard')
+
+
+import stripe
+import json
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from django.utils import timezone
+
+# ==========================================
+# STRIPE ADMIN VIEWS
+# ==========================================
+
+# Set your Stripe API key
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+@login_required
+def generate_stripe_link(request, invoice_id):
+    """Admin generates a Stripe Payment Link to share with the client"""
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    order = invoice.order
+    
+    try:
+        # Create a Stripe Payment Link with custom fields for tracking
+        payment_link = stripe.PaymentLink.create(
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': f'Order #{order.order_id} - {order.fabric_type}',
+                        'description': f'Invoice #{invoice.invoice_id} for {order.client.name}',
+                    },
+                    'unit_amount': int(invoice.amount * 100), # Stripe uses cents
+                },
+                'quantity': 1,
+            }],
+            metadata={
+                'invoice_id': str(invoice.id),
+                'invoice_number': invoice.invoice_id,
+                'order_id': str(order.id),
+                'client_name': order.client.name,
+            },
+            # Custom fields to appear on the payment page
+            after_completion={
+                'type': 'redirect',
+                'redirect': {
+                    'url': request.build_absolute_uri('/finance/')
+                }
+            }
+        )
+        
+        # Save the link to the database
+        invoice.stripe_payment_link = payment_link.url
+        invoice.save()
+        
+        ActivityLog.objects.create(
+            activity_type='payment_link_generated',
+            description=f'Payment link generated for Invoice #{invoice.invoice_id} - Amount: ${invoice.amount}',
+            user=request.user,
+            order_id=order.id
+        )
+        
+        messages.success(request, "✅ Payment link generated successfully! Share this link with the client.")
+        
+    except Exception as e:
+        messages.error(request, f"Stripe Error: {str(e)}")
+        
+    return redirect('finance_dashboard')
+
+@csrf_exempt
+def stripe_webhook(request):
+    """Stripe calls this automatically when the client pays"""
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError as e:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
+
+    # Handle checkout.session.completed (Payment Link completion)
+    if event['type'] == 'checkout.session.completed':
+        try:
+            session = event['data']['object']
+            metadata = session.get('metadata', {})
+            invoice_id = metadata.get('invoice_id')
+            
+            if invoice_id:
+                try:
+                    invoice = Invoice.objects.get(id=invoice_id)
+                    invoice.stripe_payment_status = 'paid'
+                    invoice.save()
+                    
+                    # Create activity log
+                    ActivityLog.objects.create(
+                        activity_type='payment_recorded',
+                        description=f'Stripe payment received for Invoice #{invoice.invoice_id}',
+                        user=None,
+                        order_id=invoice.order.id if invoice.order else None
+                    )
+                except Invoice.DoesNotExist:
+                    pass
+                except Exception as log_error:
+                    pass
+                    
+        except Exception as e:
+            pass
+
+    # Handle payment_intent.succeeded (Alternative Payment Link event)
+    elif event['type'] == 'payment_intent.succeeded':
+        try:
+            payment_intent = event['data']['object']
+            metadata = payment_intent.get('metadata', {})
+            invoice_id = metadata.get('invoice_id')
+            
+            if invoice_id:
+                try:
+                    invoice = Invoice.objects.get(id=invoice_id)
+                    invoice.stripe_payment_status = 'paid'
+                    invoice.save()
+                    
+                    # Create activity log
+                    ActivityLog.objects.create(
+                        activity_type='payment_recorded',
+                        description=f'Stripe payment received for Invoice #{invoice.invoice_id}',
+                        user=None,
+                        order_id=invoice.order.id if invoice.order else None
+                    )
+                except Invoice.DoesNotExist:
+                    pass
+                except Exception as log_error:
+                    pass
+                    
+        except Exception as e:
+            pass
+
+    return HttpResponse(status=200)
+
+
+@login_required
+def sync_stripe_payment(request, invoice_id):
+    """Manual endpoint to check and sync Stripe payment status"""
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+    
+    try:
+        # Query checkout sessions (Payment Links create checkout sessions)
+        sessions = stripe.checkout.Session.list(limit=100)
+        payment_found = False
+        
+        # Search through checkout sessions
+        for session in sessions:
+            try:
+                # Get metadata from session (it's a Stripe object, not a dict)
+                session_metadata = session.metadata
+                
+                # Access metadata as object attributes, not dictionary
+                found_invoice_id = getattr(session_metadata, 'invoice_id', None) if session_metadata else None
+                
+                if found_invoice_id == str(invoice_id):
+                    # If payment was successful
+                    if session.payment_status == 'paid':
+                        invoice.stripe_payment_status = 'paid'
+                        invoice.save()
+                        
+                        ActivityLog.objects.create(
+                            activity_type='payment_recorded',
+                            description=f'Stripe payment verified for Invoice #{invoice.invoice_id}',
+                            user=request.user,
+                            order_id=invoice.order.id if invoice.order else None
+                        )
+                        
+                        messages.success(request, " Payment confirmed! Invoice marked as paid.")
+                        payment_found = True
+                        break
+                    elif session.payment_status == 'unpaid':
+                        messages.warning(request, " Payment not yet received. Please check with customer.")
+                        payment_found = True
+                        break
+            except Exception:
+                continue
+        
+        # If no checkout session found, also check payment intents as fallback
+        if not payment_found:
+            payment_intents = stripe.PaymentIntent.list(limit=100)
+            
+            for pi in payment_intents:
+                try:
+                    # Access metadata as object attributes, not dictionary
+                    pi_metadata = pi.metadata
+                    found_invoice_id = getattr(pi_metadata, 'invoice_id', None) if pi_metadata else None
+                    
+                    if found_invoice_id == str(invoice_id):
+                        if pi.status == 'succeeded':
+                            invoice.stripe_payment_status = 'paid'
+                            invoice.save()
+                            
+                            ActivityLog.objects.create(
+                                activity_type='payment_recorded',
+                                description=f'Stripe payment verified for Invoice #{invoice.invoice_id}',
+                                user=request.user,
+                                order_id=invoice.order.id if invoice.order else None
+                            )
+                            
+                            messages.success(request, " Payment confirmed! Invoice marked as paid.")
+                            payment_found = True
+                            break
+                except Exception:
+                    continue
+        
+        if not payment_found:
+            messages.warning(request, " No payment activity found. Verify that payment was completed on Stripe checkout page.")
+            
+    except Exception as e:
+        messages.error(request, f"Error checking payment: {str(e)}")
+    
+    return redirect('finance_dashboard')

@@ -206,18 +206,74 @@
                 {% endif %}
               </td>
               <td>
-                <!--  PROFESSIONAL: Workflow-Triggered Billing -->
                 {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
-                  <button type="button" class="btn btn-sm btn-modern-outline" data-bs-toggle="modal"
-                    data-bs-target="#paymentModal" data-order-id="{{ order.id }}"
-                    data-order-ref="ORD-{{ order.order_id }}" data-current-paid="{{ order.total_paid|floatformat:2 }}"
-                    data-total="{{ order.payment }}">
-                     Record Payment
-                  </button>
+                  <div class="d-flex flex-column gap-2">
+                    
+                    {% if order.invoices.exists %}
+                      {% with invoice=order.invoices.first %}
+                        
+                        <!-- If Stripe link NOT generated yet -->
+                        {% if not invoice.stripe_payment_link %}
+                          <a href="{% url 'generate_stripe_link' invoice.id %}" 
+                             class="btn btn-sm" 
+                             style="background: #635bff; color: white; border: none; width: 100%;">
+                             Generate Payment Link
+                          </a>
+                        {% else %}
+                          <!-- If Stripe link IS generated -->
+                          <div class="input-group input-group-sm">
+                            <input type="text" 
+                                   class="form-control" 
+                                   value="{{ invoice.stripe_payment_link }}" 
+                                   readonly 
+                                   id="link-{{ invoice.id }}"
+                                   style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1);">
+                            <button class="btn btn-outline-light" 
+                                    onclick="copyLink('link-{{ invoice.id }}')" 
+                                    title="Copy Link"
+                                    style="font-size: 0.7rem;">
+                               Copy
+                            </button>
+                          </div>
+                          
+                          <!-- Sync Button + Payment Status Badge -->
+                          <div class="d-flex gap-1 mt-1">
+                            <a href="{% url 'sync_stripe_payment' invoice.id %}" 
+                               class="btn btn-outline-warning btn-sm flex-grow-1" 
+                               title="Check payment status"
+                               style="font-size: 0.7rem;">
+                                Sync
+                            </a>
+                            {% if invoice.stripe_payment_status == 'paid' %}
+                              <span class="badge" style="background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; font-size: 0.7rem; padding: 0.4rem;">
+                                  Paid
+                              </span>
+                            {% else %}
+                              <span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; font-size: 0.7rem; padding: 0.4rem;">
+                                  Awaiting
+                              </span>
+                            {% endif %}
+                          </div>
+                        {% endif %}
+                      {% endwith %}
+                    {% else %}
+                      <small class="text-muted">No invoice created</small>
+                    {% endif %}
+
+                    <!-- Manual Payment Entry Button -->
+                    <button type="button" 
+                            class="btn btn-sm btn-modern-outline" 
+                            data-bs-toggle="modal"
+                            data-bs-target="#paymentModal" 
+                            data-order-id="{{ order.id }}"
+                            data-order-ref="ORD-{{ order.order_id }}" 
+                            data-current-paid="{{ order.total_paid|floatformat:2 }}"
+                            data-total="{{ order.payment }}">
+                       Manual Entry
+                    </button>
+                  </div>
                 {% else %}
-                  <span class="badge bg-secondary" title="Payment can be collected once production is complete">
-                     In Production
-                  </span>
+                  <span class="badge bg-secondary"> In Production</span>
                 {% endif %}
               </td>
               <td>
@@ -322,6 +378,14 @@
         });
       });
     });
+  function copyLink(inputId) {
+  const input = document.getElementById(inputId);
+  input.select();
+  input.setSelectionRange(0, 99999); // For mobile devices
+  navigator.clipboard.writeText(input.value).then(() => {
+    alert('Payment link copied! Share this with your client.');
+  });
+}
   </script>
 
 </body>

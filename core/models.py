@@ -175,6 +175,15 @@ class Invoice(models.Model):
     company_name = models.CharField(max_length=100, default="Cosmo Enterprises")
     company_address = models.TextField(default="123 Chemical Park, Mumbai, India")
 
+    #  NEW STRIPE FIELDS ADDED HERE
+    stripe_payment_link = models.URLField(blank=True, null=True)
+    stripe_payment_status = models.CharField(max_length=20, default='pending', choices=[
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('expired', 'Expired'),
+        ('cancelled', 'Cancelled')
+    ])
+
     def save(self, *args, **kwargs):
         if not self.invoice_id:
             self.invoice_id = self.generate_invoice_id()
