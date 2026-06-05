@@ -173,7 +173,7 @@ class Invoice(models.Model):
     order_id_display = models.CharField(max_length=50)
     order_total = models.DecimalField(max_digits=10, decimal_places=2)
     company_name = models.CharField(max_length=100, default="Cosmo Enterprises")
-    company_address = models.TextField(default="123 Chemical Park, Mumbai, India")
+    company_address = models.TextField(default="Textile Area, Karachi, Pakistan")
 
     #  NEW STRIPE FIELDS ADDED HERE
     stripe_payment_link = models.URLField(blank=True, null=True)

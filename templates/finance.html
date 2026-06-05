@@ -206,76 +206,88 @@
                 {% endif %}
               </td>
               <td>
-                {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
-                  <div class="d-flex flex-column gap-2">
-                    
-                    {% if order.invoices.exists %}
-                      {% with invoice=order.invoices.first %}
-                        
-                        <!-- If Stripe link NOT generated yet -->
-                        {% if not invoice.stripe_payment_link %}
-                          <a href="{% url 'generate_stripe_link' invoice.id %}" 
-                             class="btn btn-sm" 
-                             style="background: #635bff; color: white; border: none; width: 100%;">
-                             Generate Payment Link
-                          </a>
-                        {% else %}
-                          <!-- If Stripe link IS generated -->
-                          <div class="input-group input-group-sm">
-                            <input type="text" 
-                                   class="form-control" 
-                                   value="{{ invoice.stripe_payment_link }}" 
-                                   readonly 
-                                   id="link-{{ invoice.id }}"
-                                   style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1);">
-                            <button class="btn btn-outline-light" 
-                                    onclick="copyLink('link-{{ invoice.id }}')" 
-                                    title="Copy Link"
-                                    style="font-size: 0.7rem;">
-                               Copy
-                            </button>
-                          </div>
-                          
-                          <!-- Sync Button + Payment Status Badge -->
-                          <div class="d-flex gap-1 mt-1">
-                            <a href="{% url 'sync_stripe_payment' invoice.id %}" 
-                               class="btn btn-outline-warning btn-sm flex-grow-1" 
-                               title="Check payment status"
-                               style="font-size: 0.7rem;">
-                                Sync
-                            </a>
-                            {% if invoice.stripe_payment_status == 'paid' %}
-                              <span class="badge" style="background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; font-size: 0.7rem; padding: 0.4rem;">
-                                  Paid
-                              </span>
-                            {% else %}
-                              <span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; font-size: 0.7rem; padding: 0.4rem;">
-                                  Awaiting
-                              </span>
-                            {% endif %}
-                          </div>
-                        {% endif %}
-                      {% endwith %}
-                    {% else %}
-                      <small class="text-muted">No invoice created</small>
-                    {% endif %}
+  {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
+    <div class="d-flex flex-column gap-2">
+      
+      {% if order.invoices.exists %}
+        {% with invoice=order.invoices.first %}
+          
+          <!--  Only show Generate Link if NOT paid AND link doesn't exist yet -->
+          {% if invoice.stripe_payment_status != 'paid' and not invoice.stripe_payment_link %}
+            <a href="{% url 'generate_stripe_link' invoice.id %}" 
+               class="btn btn-sm" 
+               style="background: #635bff; color: white; border: none; width: 100%;">
+               Generate Payment Link
+            </a>
+          {% elif invoice.stripe_payment_status == 'paid' %}
+            <!--  Already Paid - Show success badge -->
+            <div class="text-center">
+              <span class="badge-modern badge-paid" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
+                 Fully Paid
+              </span>
+            </div>
+          {% else %}
+            <!--  Link Generated - Show link and sync -->
+            <div class="input-group input-group-sm">
+              <input type="text" 
+                     class="form-control" 
+                     value="{{ invoice.stripe_payment_link }}" 
+                     readonly 
+                     id="link-{{ invoice.id }}"
+                     style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: white;">
+              <button class="btn btn-outline-light" 
+                      onclick="copyLink('link-{{ invoice.id }}')" 
+                      title="Copy Link"
+                      style="font-size: 0.7rem;">
+                 Copy
+              </button>
+            </div>
+            
+            <div class="d-flex gap-1 mt-1">
+              <a href="{% url 'sync_stripe_payment' invoice.id %}" 
+                 class="btn btn-outline-warning btn-sm flex-grow-1" 
+                 title="Check payment status"
+                 style="font-size: 0.7rem;">
+                 Sync
+              </a>
+              {% if invoice.stripe_payment_status == 'paid' %}
+                <span class="badge" style="background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; font-size: 0.7rem; padding: 0.4rem;">
+                  ✓ Paid
+                </span>
+              {% else %}
+                <span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; font-size: 0.7rem; padding: 0.4rem;">
+                   Awaiting
+                </span>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        
+      {% else %}
+        <!--  NO INVOICE - Show Create Invoice Button -->
+        <a href="{% url 'create_invoice' order.id %}" 
+           class="btn btn-sm" 
+           style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; width: 100%; font-weight: 600;">
+           Create Invoice
+        </a>
+      {% endif %}
 
-                    <!-- Manual Payment Entry Button -->
-                    <button type="button" 
-                            class="btn btn-sm btn-modern-outline" 
-                            data-bs-toggle="modal"
-                            data-bs-target="#paymentModal" 
-                            data-order-id="{{ order.id }}"
-                            data-order-ref="ORD-{{ order.order_id }}" 
-                            data-current-paid="{{ order.total_paid|floatformat:2 }}"
-                            data-total="{{ order.payment }}">
-                       Manual Entry
-                    </button>
-                  </div>
-                {% else %}
-                  <span class="badge bg-secondary"> In Production</span>
-                {% endif %}
-              </td>
+      <!-- Manual Payment Entry Button (always show) -->
+      <button type="button" 
+              class="btn btn-sm btn-modern-outline" 
+              data-bs-toggle="modal"
+              data-bs-target="#paymentModal" 
+              data-order-id="{{ order.id }}"
+              data-order-ref="ORD-{{ order.order_id }}" 
+              data-current-paid="{{ order.total_paid|floatformat:2 }}"
+              data-total="{{ order.payment }}">
+         Manual Entry
+      </button>
+    </div>
+  {% else %}
+    <span class="badge bg-secondary"> In Production</span>
+  {% endif %}
+</td>
               <td>
                 {% if order.invoices.exists %}
                   <a href="{% url 'view_invoice' order.invoices.first.id %}" class="btn btn-sm btn-modern-outline" target="_blank">

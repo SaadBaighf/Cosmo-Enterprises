@@ -14,6 +14,10 @@ from .models import Invoice, ActivityLog, Order
 from django.contrib.auth.decorators import login_required
 from .models import Material, ActivityLog
 from .models import Client, Order, Material, Invoice
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils.html import strip_tags
 from django.urls import reverse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -571,7 +575,7 @@ def inventory_dashboard(request):
 def finance_dashboard(request):
     if request.method == 'POST':
         
-         # ✅ Handle Edit Invoice
+         #  Handle Edit Invoice
         if 'edit_invoice' in request.POST:
             try:
                 invoice_id = request.POST.get('invoice_id')
@@ -589,7 +593,7 @@ def finance_dashboard(request):
                 messages.error(request, f"Error: {str(e)}")
             return redirect('finance_dashboard')
 
-        # ✅ Handle Delete Invoice
+        #  Handle Delete Invoice
         elif 'delete_invoice' in request.POST:
             try:
                 invoice_id = request.POST.get('invoice_id')
@@ -600,7 +604,7 @@ def finance_dashboard(request):
                 messages.error(request, f"Error: {str(e)}")
             return redirect('finance_dashboard')
 
-        # ✅ Handle Record Payment (your existing logic)
+        #  Handle Record Payment (your existing logic)
         
         elif 'record_payment' in request.POST:
             try:
@@ -614,17 +618,20 @@ def finance_dashboard(request):
                 elif new_total_paid > order.payment:
                     messages.error(request, f"Paid amount cannot exceed total invoice amount (${order.payment}).")
                 else:
-                    # ✅ DELETE all existing invoices
+                    #  DELETE all existing invoices
                     Invoice.objects.filter(order=order).delete()
 
-                    # ✅ ALWAYS create a new invoice — even if $0
-                    Invoice.objects.create(
+                    #  ALWAYS create a new invoice — even if $0
+                    new_invoice = Invoice.objects.create(
                         order=order,
                         amount=new_total_paid,
-                        payment_method='cash'  # or omit if you remove payment_method
+                        payment_method='cash' , # or omit if you remove payment_method
+                        stripe_payment_status = 'paid'
                     )
                     
-                    # ✅ ADD ACTIVITY LOG
+                    send_payment_receipt_email(new_invoice, order )
+                    
+                    #  ADD ACTIVITY LOG
                     ActivityLog.objects.create(
                         activity_type='payment_recorded',
                         description=f'Payment recorded: ${new_total_paid} for order #{order.order_id}',
@@ -642,9 +649,18 @@ def finance_dashboard(request):
     status_filter = request.GET.get('status', '').strip()
         
     
+    # ✅ Only count invoices that are marked as 'paid'
     client_invoices = Order.objects.select_related('client').prefetch_related('invoices').annotate(
-        total_paid=Coalesce(Sum('invoices__amount'), 0, output_field=DecimalField()),
-        db_remaining=F('payment') - Coalesce(Sum('invoices__amount'), 0, output_field=DecimalField())
+    total_paid=Coalesce(
+        Sum('invoices__amount', filter=Q(invoices__stripe_payment_status='paid')), 
+        0, 
+        output_field=DecimalField()
+    ),
+    db_remaining=F('payment') - Coalesce(
+        Sum('invoices__amount', filter=Q(invoices__stripe_payment_status='paid')), 
+        0, 
+        output_field=DecimalField()
+    )
     )
     
     # Apply search filter
@@ -758,7 +774,7 @@ def view_invoice(request, invoice_id):
     order = invoice.order  
 
     # Calculate total paid and remaining
-    total_paid = order.invoices.aggregate(total=models.Sum('amount'))['total'] or 0
+    total_paid = order.invoices.filter(stripe_payment_status='paid').aggregate(total=models.Sum('amount'))['total'] or 0
     remaining = order.payment - total_paid
     
     # BANK DETAILS FOR COSMO ENTERPRISES
@@ -1075,6 +1091,8 @@ def generate_stripe_link(request, invoice_id):
     order = invoice.order
     
     try:
+        
+        success_url = request.build_absolute_uri(reverse('payment_success'))
         # Create a Stripe Payment Link with custom fields for tracking
         payment_link = stripe.PaymentLink.create(
             line_items=[{
@@ -1098,7 +1116,7 @@ def generate_stripe_link(request, invoice_id):
             after_completion={
                 'type': 'redirect',
                 'redirect': {
-                    'url': request.build_absolute_uri('/finance/')
+                    'url': success_url,
                 }
             }
         )
@@ -1114,12 +1132,51 @@ def generate_stripe_link(request, invoice_id):
             order_id=order.id
         )
         
-        messages.success(request, "✅ Payment link generated successfully! Share this link with the client.")
+        messages.success(request, " Payment link generated successfully! Share this link with the client.")
         
     except Exception as e:
         messages.error(request, f"Stripe Error: {str(e)}")
         
     return redirect('finance_dashboard')
+
+def send_payment_receipt_email(invoice, order):
+    """Sends a payment receipt email to the client"""
+    try:
+        client_email = order.client.email
+        
+        if not client_email:
+            print(f" No email found for client {order.client.name}")
+            return False
+
+        subject = f"Payment Receipt - Invoice #{invoice.invoice_id} | Cosmo Enterprises"
+        
+        context = {
+            'invoice': invoice,
+            'order': order,
+        }
+        
+        # Render HTML email
+        html_message = render_to_string('emails/payment_receipt.html', context)
+        
+        # Create plain text version (fallback)
+        plain_message = strip_tags(html_message)
+        
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[client_email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        
+        print(f" Receipt email sent to {client_email}")
+        return True
+        
+    except Exception as e:
+        print(f" Failed to send email: {e}")
+        return False
+
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -1148,6 +1205,8 @@ def stripe_webhook(request):
                     invoice = Invoice.objects.get(id=invoice_id)
                     invoice.stripe_payment_status = 'paid'
                     invoice.save()
+                    
+                    send_payment_receipt_email(invoice, invoice.order)
                     
                     # Create activity log
                     ActivityLog.objects.create(
@@ -1220,6 +1279,8 @@ def sync_stripe_payment(request, invoice_id):
                         invoice.stripe_payment_status = 'paid'
                         invoice.save()
                         
+                        send_payment_receipt_email(invoice, invoice.order)
+                        
                         ActivityLog.objects.create(
                             activity_type='payment_recorded',
                             description=f'Stripe payment verified for Invoice #{invoice.invoice_id}',
@@ -1272,3 +1333,38 @@ def sync_stripe_payment(request, invoice_id):
         messages.error(request, f"Error checking payment: {str(e)}")
     
     return redirect('finance_dashboard')
+
+@login_required
+def create_invoice(request, order_id):
+    """Create an invoice for an order"""
+    order = get_object_or_404(Order, id=order_id)
+    
+    try:
+        # Create invoice
+        invoice = Invoice.objects.create(
+            order=order,
+            amount=order.payment,
+            payment_method='other',  # Default payment method
+            stripe_payment_status = 'pending'
+        )
+        
+        ActivityLog.objects.create(
+            activity_type='invoice_created',
+            description=f'Invoice {invoice.invoice_id} created for Order #{order.order_id}',
+            user=request.user,
+            order_id=order.id
+        )
+        
+        messages.success(request, f" Invoice {invoice.invoice_id} created successfully!")
+        
+    except Exception as e:
+        messages.error(request, f"Error creating invoice: {str(e)}")
+    
+    return redirect('finance_dashboard')
+
+def payment_success(request):
+    """Public page shown to the client after they successfully pay via Stripe"""
+    context = {
+        'company_name': 'Cosmo Enterprises'
+    }
+    return render(request, 'payment_success.html', context)

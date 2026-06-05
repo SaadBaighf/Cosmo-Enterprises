@@ -139,3 +139,14 @@ LOGIN_REDIRECT_URL = 'main_dashboard'  # Where to go after successful login
 STRIPE_PUBLIC_KEY ='pk_test_51Tf0C3RrudPaC7yAlEAz0z0QhY8NmSTL9wg9JnQoFS8T03wGf7Cio5fUVy1bYYzpkrVddfbFDa3Uzhx2xhE79Ys8008C4WFdd1'
 STRIPE_SECRET_KEY = 'sk_test_51Tf0C3RrudPaC7yAKujCgJTI7y8QTQcDfhVpPtWbzvSArt6r5FWrOIx76tITuMOXMFmJDe4bbkctgObLeHnSH2Ar00d29zhLZt'
 STRIPE_WEBHOOK_SECRET = 'whsec_ae755393319d895609ae961eb049b2a0265ec8a3598db3a6ec53c8836681c3da'
+
+# ==========================================
+# EMAIL CONFIGURATION
+# ==========================================
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'baighafizsaad@gmail.com'          # REPLACE with your Gmail
+EMAIL_HOST_PASSWORD = 'khfr sqni bwhf vlhm'       # REPLACE with App Password
+DEFAULT_FROM_EMAIL = 'Cosmo Enterprises <CosmoEnterprises@gmail.com>'  # REPLACE with your Gmail
