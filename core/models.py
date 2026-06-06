@@ -180,6 +180,7 @@ class Invoice(models.Model):
     stripe_payment_status = models.CharField(max_length=20, default='pending', choices=[
         ('pending', 'Pending'),
         ('paid', 'Paid'),
+        ('failed' , 'Failed'),
         ('expired', 'Expired'),
         ('cancelled', 'Cancelled')
     ])

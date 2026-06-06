@@ -1223,6 +1223,29 @@ def stripe_webhook(request):
         except Exception as e:
             pass
 
+    elif event['type'] == 'payment_intent.payment_failed':
+        try:
+            payment_intent = event['data']['object']
+            metadata = payment_intent.get('metadata', {})
+            invoice_id = metadata.get('invoice_id')
+            
+            if invoice_id:
+                try:
+                    invoice = Invoice.objects.get(id=invoice_id)
+                    invoice.stripe_payment_status = 'failed'
+                    invoice.save()
+                    
+                    ActivityLog.objects.create(
+                        activity_type='payment_failed',
+                        description=f'Stripe payment FAILED for Invoice #{invoice.invoice_id}',
+                        user=None,
+                        order_id=invoice.order.id if invoice.order else None
+                    )
+                except Invoice.DoesNotExist:
+                    pass
+        except Exception as e:
+            print(f"Error handling failed payment: {e}")        
+
     # Handle payment_intent.succeeded (Alternative Payment Link event)
     elif event['type'] == 'payment_intent.succeeded':
         try:
