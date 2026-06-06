@@ -59,6 +59,90 @@
       object-fit: cover;
       border-radius: 50%;
     }
+    /* Modern Actions Column Styling */
+.actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.badge-paid {
+  background: rgba(74, 222, 128, 0.15) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3) !important;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-pending {
+  background: rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-link-group {
+  position: relative;
+}
+
+.payment-link-group .input-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-buttons .btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.action-buttons .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.action-buttons .btn-primary {
+  background: linear-gradient(135deg, #635bff 0%, #4338ca 100%) !important;
+  border: none !important;
+}
+
+.action-buttons .btn-outline-warning {
+  border: 1px solid #fbbf24 !important;
+  color: #fbbf24 !important;
+}
+
+.action-buttons .btn-outline-warning:hover {
+  background: rgba(251, 191, 36, 0.1) !important;
+}
+
+.action-buttons .btn-outline-light {
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+.action-buttons .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
   </style>
 </head>
 
@@ -207,82 +291,83 @@
               </td>
               <td>
   {% if order.status == 'ready_for_shipment' or order.status == 'shipped' or order.status == 'completed' %}
-    <div class="d-flex flex-column gap-2">
+    <div class="actions-container">
       
       {% if order.invoices.exists %}
         {% with invoice=order.invoices.first %}
           
-          <!--  Only show Generate Link if NOT paid AND link doesn't exist yet -->
-          {% if invoice.stripe_payment_status != 'paid' and not invoice.stripe_payment_link %}
-            <a href="{% url 'generate_stripe_link' invoice.id %}" 
-               class="btn btn-sm" 
-               style="background: #635bff; color: white; border: none; width: 100%;">
-               Generate Payment Link
-            </a>
-          {% elif invoice.stripe_payment_status == 'paid' %}
-            <!--  Already Paid - Show success badge -->
-            <div class="text-center">
-              <span class="badge-modern badge-paid" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
-                 Fully Paid
+          <!-- Invoice Status Badge -->
+          <div class="mb-2">
+            {% if invoice.stripe_payment_status == 'paid' %}
+              <span class="badge badge-paid w-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Paid
               </span>
-            </div>
-          {% else %}
-            <!--  Link Generated - Show link and sync -->
-            <div class="input-group input-group-sm">
-              <input type="text" 
-                     class="form-control" 
-                     value="{{ invoice.stripe_payment_link }}" 
-                     readonly 
-                     id="link-{{ invoice.id }}"
-                     style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: white;">
-              <button class="btn btn-outline-light" 
-                      onclick="copyLink('link-{{ invoice.id }}')" 
-                      title="Copy Link"
-                      style="font-size: 0.7rem;">
-                 Copy
-              </button>
-            </div>
-            
-            <div class="d-flex gap-1 mt-1">
-              <a href="{% url 'sync_stripe_payment' invoice.id %}" 
-                 class="btn btn-outline-warning btn-sm flex-grow-1" 
-                 title="Check payment status"
-                 style="font-size: 0.7rem;">
-                 Sync
-              </a>
-              {% if invoice.stripe_payment_status == 'paid' %}
-                <span class="badge" style="background: rgba(74, 222, 128, 0.2); color: #4ade80; border: 1px solid #4ade80; font-size: 0.7rem; padding: 0.4rem;">
-                  ✓ Paid
-                </span>
-              {% else %}
-                <span class="badge" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; font-size: 0.7rem; padding: 0.4rem;">
-                   Awaiting
-                </span>
-              {% endif %}
-            </div>
+            {% else %}
+              <span class="badge badge-pending w-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Awaiting Payment
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Payment Link Section -->
+          {% if invoice.stripe_payment_link %}
+            <button class="btn btn-outline-primary btn-sm w-100 mb-2 copy-link-btn" 
+                    data-link="{{ invoice.stripe_payment_link }}"
+                    title="Copy Payment Link"
+                    style="font-weight: 500;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copy Payment Link
+            </button>
           {% endif %}
+
+          <!-- Action Buttons Grid -->
+          <div class="action-buttons">
+            {% if invoice.stripe_payment_status != 'paid' and not invoice.stripe_payment_link %}
+              <a href="{% url 'generate_stripe_link' invoice.id %}" 
+                 class="btn btn-primary btn-sm w-100 mb-2" 
+                 style="background: linear-gradient(135deg, #635bff 0%, #4338ca 100%); border: none; font-weight: 500;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                Generate Link
+              </a>
+            {% endif %}
+            
+            {% if invoice.stripe_payment_status != 'paid' %}
+              <a href="{% url 'sync_stripe_payment' invoice.id %}" 
+                 class="btn btn-outline-warning btn-sm w-100 mb-2" 
+                 style="font-weight: 500;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                Sync Status
+              </a>
+            {% endif %}
+            
+            <button type="button" 
+                    class="btn btn-outline-light btn-sm w-100" 
+                    data-bs-toggle="modal"
+                    data-bs-target="#paymentModal" 
+                    data-order-id="{{ order.id }}"
+                    data-order-ref="ORD-{{ order.order_id }}" 
+                    data-current-paid="{{ order.total_paid|floatformat:2 }}"
+                    data-total="{{ order.payment }}"
+                    style="font-weight: 500;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="6" y1="12" x2="6" y2="12"></line><line x1="10" y1="12" x2="14" y2="12"></line><line x1="18" y1="12" x2="18" y2="12"></line></svg>
+              Manual Entry
+            </button>
+          </div>
+
         {% endwith %}
         
       {% else %}
-        <!--  NO INVOICE - Show Create Invoice Button -->
+        <!-- No Invoice - Show Create Button -->
         <a href="{% url 'create_invoice' order.id %}" 
-           class="btn btn-sm" 
-           style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; width: 100%; font-weight: 600;">
-           Create Invoice
+           class="btn btn-success btn-sm w-100" 
+           style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-weight: 600; padding: 8px 16px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+          Create Invoice
         </a>
       {% endif %}
 
-      <!-- Manual Payment Entry Button (always show) -->
-      <button type="button" 
-              class="btn btn-sm btn-modern-outline" 
-              data-bs-toggle="modal"
-              data-bs-target="#paymentModal" 
-              data-order-id="{{ order.id }}"
-              data-order-ref="ORD-{{ order.order_id }}" 
-              data-current-paid="{{ order.total_paid|floatformat:2 }}"
-              data-total="{{ order.payment }}">
-         Manual Entry
-      </button>
     </div>
   {% else %}
     <span class="badge bg-secondary"> In Production</span>
@@ -346,59 +431,73 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Finance Dashboard JavaScript -->
-  <script>
-    // Apply search when Enter is pressed
-    document.getElementById('searchInput').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        applyFilter();
-      }
+<script>
+  // Apply search when Enter is pressed
+  document.getElementById('searchInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      applyFilter();
+    }
+  });
+
+  // Apply filter function
+  function applyFilter() {
+    const searchValue = document.getElementById('searchInput').value;
+    const statusValue = document.getElementById('statusFilter').value;
+
+    const url = new URL(window.location);
+    url.searchParams.set('q', searchValue);
+    if (statusValue) {
+      url.searchParams.set('status', statusValue);
+    } else {
+      url.searchParams.delete('status');
+    }
+    window.location.href = url.toString();
+  }
+
+  // Initialize payment modal
+  document.addEventListener('DOMContentLoaded', function () {
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+
+    const recordButtons = document.querySelectorAll('[data-bs-target="#paymentModal"]');
+    recordButtons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const orderId = this.getAttribute('data-order-id');
+        const orderRef = this.getAttribute('data-order-ref');
+        const currentPaid = this.getAttribute('data-current-paid');
+        const total = this.getAttribute('data-total');
+
+        document.getElementById('payment-order-id').value = orderId;
+        document.getElementById('payment-order-ref').textContent = orderRef;
+        document.getElementById('payment-total').value = '$' + parseFloat(total).toFixed(2);
+        document.getElementById('payment-paid-amount').value = parseFloat(currentPaid).toFixed(2);
+
+        paymentModal.show();
+      });
     });
 
-    // Apply filter function
-    function applyFilter() {
-      const searchValue = document.getElementById('searchInput').value;
-      const statusValue = document.getElementById('statusFilter').value;
-
-      const url = new URL(window.location);
-      url.searchParams.set('q', searchValue);
-      if (statusValue) {
-        url.searchParams.set('status', statusValue);
-      } else {
-        url.searchParams.delete('status');
-      }
-      window.location.href = url.toString();
-    }
-
-    // Initialize payment modal
-    document.addEventListener('DOMContentLoaded', function () {
-      const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-
-      const recordButtons = document.querySelectorAll('[data-bs-target="#paymentModal"]');
-      recordButtons.forEach(btn => {
-        btn.addEventListener('click', function () {
-          const orderId = this.getAttribute('data-order-id');
-          const orderRef = this.getAttribute('data-order-ref');
-          const currentPaid = this.getAttribute('data-current-paid');
-          const total = this.getAttribute('data-total');
-
-          document.getElementById('payment-order-id').value = orderId;
-          document.getElementById('payment-order-ref').textContent = orderRef;
-          document.getElementById('payment-total').value = '$' + parseFloat(total).toFixed(2);
-          document.getElementById('payment-paid-amount').value = parseFloat(currentPaid).toFixed(2);
-
-          paymentModal.show();
+    // ✅ NEW: Handle Copy Link Buttons with visual feedback
+    document.querySelectorAll('.copy-link-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const link = this.getAttribute('data-link');
+        
+        navigator.clipboard.writeText(link).then(() => {
+          // Visual feedback: Change button to "Copied!" temporarily
+          const originalHTML = this.innerHTML;
+          this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+          this.classList.remove('btn-outline-primary');
+          this.classList.add('btn-success');
+          
+          // Revert back after 2 seconds
+          setTimeout(() => {
+            this.innerHTML = originalHTML;
+            this.classList.remove('btn-success');
+            this.classList.add('btn-outline-primary');
+          }, 2000);
         });
       });
     });
-  function copyLink(inputId) {
-  const input = document.getElementById(inputId);
-  input.select();
-  input.setSelectionRange(0, 99999); // For mobile devices
-  navigator.clipboard.writeText(input.value).then(() => {
-    alert('Payment link copied! Share this with your client.');
   });
-}
-  </script>
+</script>
 
 </body>
 </html>
