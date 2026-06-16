@@ -5,7 +5,7 @@
 
 The Chemical Company Management System is a Django-based web application designed to manage the internal operations of a chemical company. The system provides centralized control over clients, vendors, inventory, orders, payments, and invoice generation, enabling efficient tracking of business transactions and resources.
 
-This project was developed as part of the Software Engineering Project (SEP) and follows a modular, database-driven architecture.
+This project was developed as part of the Database Management System (DBMS) and follows a modular, database-driven architecture.
 
 # Features
 
