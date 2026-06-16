@@ -1,5 +1,5 @@
 
-# Chemical Company Management System (SEP Project)
+# Cosmo Enterprises-DBMS Project)
 
 ## Overview
 
